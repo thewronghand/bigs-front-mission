@@ -1,15 +1,29 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SignUp, SignIn, BoardList, BoardDetail, BoardForm } from './pages';
-import { PrivateRoute } from './components';
+import { PrivateRoute, PublicRoute } from './components';
 import { ROUTES } from './utils';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
-        <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
-        <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
+        {/* Public Routes - 로그인 상태면 게시판으로 리다이렉트 */}
+        <Route
+          path={ROUTES.SIGN_UP}
+          element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path={ROUTES.SIGN_IN}
+          element={
+            <PublicRoute>
+              <SignIn />
+            </PublicRoute>
+          }
+        />
 
         {/* Private Routes */}
         <Route
