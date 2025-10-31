@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { signUp } from '../api';
 import { isValidEmail, isValidPassword, getPasswordErrorMessage, getPasswordMismatchMessage } from '../utils/validation';
-import { FormInput, PasswordRequirements, SuccessOverlay } from '../components/auth';
+import { FormInput, PasswordRequirements, SuccessOverlay, ErrorMessage } from '../components/auth';
 import type { SignUpRequest } from '../types/auth';
 
 export default function SignUp() {
@@ -215,15 +215,7 @@ export default function SignUp() {
           </div>
 
           {/* API 에러 메시지 */}
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              apiError ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
-            }`}
-          >
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{apiError}</p>
-            </div>
-          </div>
+          <ErrorMessage message={apiError} />
 
           {/* 제출 버튼 */}
           <button
@@ -242,9 +234,9 @@ export default function SignUp() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               이미 계정이 있으신가요?{' '}
-              <a href="/signin" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link to="/signin" className="text-blue-600 hover:text-blue-700 font-medium">
                 로그인
-              </a>
+              </Link>
             </p>
           </div>
         </form>
