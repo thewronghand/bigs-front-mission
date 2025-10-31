@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { signIn } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { isValidEmail } from '../utils/validation';
-import { FormInput } from '../components/auth';
+import { FormInput, ErrorMessage } from '../components/auth';
 import type { SignInRequest } from '../types/auth';
 
 export default function SignIn() {
@@ -21,6 +21,7 @@ export default function SignIn() {
   });
 
   const [apiError, setApiError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   const username = watch('username', '');
   const password = watch('password', '');
@@ -37,7 +38,7 @@ export default function SignIn() {
       const response = await signIn(data);
 
       // Zustand 스토어에 토큰 저장 (JWT 디코딩 포함)
-      login(response.accessToken, response.refreshToken);
+      login(response.accessToken, response.refreshToken, rememberMe);
 
       // 게시판 페이지로 이동
       navigate('/boards');
@@ -96,16 +97,36 @@ export default function SignIn() {
             </p>
           </div>
 
-          {/* API 에러 메시지 */}
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              apiError ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
-            }`}
-          >
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{apiError}</p>
+          {/* 로그인 상태 유지 체크박스 */}
+          <div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+                로그인 상태 유지
+              </label>
+            </div>
+            {/* 체크 시 안내 메시지 */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                rememberMe ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
+              }`}
+            >
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  🔒 안전을 위해 개인 기기에서만 사용해주세요
+                </p>
+              </div>
             </div>
           </div>
+
+          {/* API 에러 메시지 */}
+          <ErrorMessage message={apiError} />
 
           {/* 제출 버튼 */}
           <button
@@ -124,9 +145,9 @@ export default function SignIn() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               계정이 없으신가요?{' '}
-              <a href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
                 회원가입
-              </a>
+              </Link>
             </p>
           </div>
         </form>
