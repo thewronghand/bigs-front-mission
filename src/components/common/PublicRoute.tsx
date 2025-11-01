@@ -11,7 +11,7 @@ export default function PublicRoute({ children }: PublicRouteProps) {
 
   // 이미 로그인된 상태라면 게시판으로 리다이렉트
   if (isAuthenticated) {
-    return <Navigate to={ROUTES.BOARDS} replace />;
+    return <Navigate to={ROUTES.BOARD} replace />;
   }
 
   return <>{children}</>;
