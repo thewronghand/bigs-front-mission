@@ -16,7 +16,7 @@ interface AuthState {
   isAuthenticated: boolean;
 
   // 액션
-  login: (accessToken: string, refreshToken: string) => void;
+  login: (accessToken: string, refreshToken: string, rememberMe?: boolean) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: User) => void;
   logout: () => void;
@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   refreshToken: null,
   isAuthenticated: false,
 
-  login: (accessToken, refreshToken) => {
+  login: (accessToken, refreshToken, rememberMe = false) => {
     // JWT 디코딩해서 사용자 정보 추출
     const decoded = jwtDecode<JWTPayload>(accessToken);
     const user: User = {
@@ -37,9 +37,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       name: decoded.name,
     };
 
-    // 토큰 및 사용자 정보 저장
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    // 자동 로그인 여부에 따라 저장소 선택
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     set({ accessToken, refreshToken, user, isAuthenticated: true });
   },
 
@@ -54,14 +55,24 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    // localStorage와 sessionStorage 모두에서 제거
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
   },
 
   loadFromStorage: () => {
-    const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    // localStorage 우선 체크 (자동 로그인)
+    let accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    let refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+
+    // localStorage에 없으면 sessionStorage 체크
+    if (!accessToken || !refreshToken) {
+      accessToken = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    }
 
     if (accessToken && refreshToken) {
       try {
@@ -72,9 +83,11 @@ export const useAuthStore = create<AuthState>((set) => ({
         };
         set({ accessToken, refreshToken, user, isAuthenticated: true });
       } catch {
-        // JWT 디코딩 실패 시 로그아웃 처리
+        // JWT 디코딩 실패 시 모든 저장소에서 제거
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       }
     }
   },
