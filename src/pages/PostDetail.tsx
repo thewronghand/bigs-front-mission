@@ -1,9 +1,9 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { getPostDetail } from "../api";
-import { useEffect, useState } from "react";
-import type { Post } from "../types/post";
-import { API_BASE_URL } from "../utils";
-import { Button } from "../components";
+import { useParams, useNavigate } from 'react-router-dom';
+import { getPostDetail } from '../api';
+import { useEffect, useState } from 'react';
+import type { Post } from '../types/post';
+import { API_BASE_URL } from '../utils';
+import { Button } from '../components';
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -11,6 +11,7 @@ export default function PostDetail() {
   const [postDetailData, setPostDetailData] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -24,7 +25,7 @@ export default function PostDetail() {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchPostDetail();
   }, [id]);
@@ -34,7 +35,11 @@ export default function PostDetail() {
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">게시글 상세</h1>
-          <Button onClick={() => navigate('/boards')} variant="secondary" size="md">
+          <Button
+            onClick={() => navigate('/boards')}
+            variant="secondary"
+            size="md"
+          >
             목록으로
           </Button>
         </div>
@@ -76,33 +81,71 @@ export default function PostDetail() {
             </div>
           ) : postDetailData ? (
             <div key={postDetailData.id} className="animate-fadeIn">
-            {/* 카테고리 */}
-            <div className="mb-4">
-              <span className="inline-block text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded">
-                {postDetailData.boardCategory}
-              </span>
-            </div>
-
-            {/* 제목 */}
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              {postDetailData.title}
-            </h2>
-
-            {/* 작성일 */}
-            <p className="text-sm text-gray-500 mb-6">
-              {new Date(postDetailData.createdAt).toLocaleString('ko-KR')}
-            </p>
-
-            {/* 이미지 */}
-            {postDetailData.imageUrl && (
-              <div className="mb-6">
-                <img
-                  src={`${API_BASE_URL}${postDetailData.imageUrl}`}
-                  alt="게시글 이미지"
-                  className="max-w-full rounded-lg shadow"
-                />
+              {/* 카테고리 */}
+              <div className="mb-4 flex justify-between">
+                <div>
+                  <span className="inline-block text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded">
+                    {postDetailData.boardCategory}
+                  </span>
+                </div>
+                {/* 작성일 */}
+                <p className="text-sm text-gray-500 py-1">
+                  {new Date(postDetailData.createdAt).toLocaleString('ko-KR')}
+                </p>
               </div>
-            )}
+
+              {/* 제목 */}
+              <h2 className="text-3xl font-bold text-gray-800 mb-4 wrap-break-word">
+                {postDetailData.title}
+              </h2>
+
+              <div className="mb-4 flex gap-1.5 justify-end">
+                <Button variant="secondary" size="xs" children="수정" />
+                <Button variant="danger" size="xs" children="삭제" />
+              </div>
+
+              {/* 이미지 */}
+              {postDetailData.imageUrl && (
+                <div className="mb-6 relative min-h-[300px]">
+                  {imageLoading && (
+                    <div className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center transition-opacity duration-300">
+                      <svg
+                        className="animate-spin h-10 w-10"
+                        viewBox="0 0 50 50"
+                      >
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          fill="none"
+                          stroke="#E5E7EB"
+                          strokeWidth="4"
+                        />
+                        <circle
+                          cx="25"
+                          cy="25"
+                          r="20"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                          strokeDasharray="80, 200"
+                          strokeDashoffset="0"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  <img
+                    src={`${API_BASE_URL}${postDetailData.imageUrl}`}
+                    alt="게시글 이미지"
+                    className={`${
+                      imageLoading ? 'opacity-0' : 'opacity-100'
+                    } max-w-full max-h-[800px] object-contain rounded-lg shadow transition-opacity duration-500`}
+                    onLoad={() => setImageLoading(false)}
+                    onError={() => setImageLoading(false)}
+                  />
+                </div>
+              )}
 
               {/* 내용 */}
               <div className="prose max-w-none">
