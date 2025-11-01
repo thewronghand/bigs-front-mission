@@ -100,8 +100,12 @@ export default function PostDetail() {
               </h2>
 
               <div className="mb-4 flex gap-1.5 justify-end">
-                <Button variant="secondary" size="xs" children="수정" />
-                <Button variant="danger" size="xs" children="삭제" />
+                <Button variant="secondary" size="xs">
+                  수정
+                </Button>
+                <Button variant="danger" size="xs">
+                  삭제
+                </Button>
               </div>
 
               {/* 이미지 */}
