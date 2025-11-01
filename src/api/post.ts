@@ -1,5 +1,5 @@
 import { apiClient } from '../utils/axios';
-import type { PostListResponse, PostCreateRequest } from '../types/post';
+import type { PostListResponse, PostCreateRequest, Post } from '../types/post';
 
 export const getPosts = async (page = 0, size = 10): Promise<PostListResponse> => {
   const response = await apiClient.get<PostListResponse>('/boards', {
@@ -33,3 +33,9 @@ export const createPost = async (
 
   return response.data;
 };
+
+export const getPostDetail = async (id: number): Promise<Post> => {
+  const response = await apiClient.get<Post>(`/boards/${id}`);
+  return response.data;
+}
+
