@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getPosts } from '../api';
-import { Button } from '../components';
+import { Button, Spinner } from '../components';
 import type { PostListResponse } from '../types/post';
 
 export default function Board() {
@@ -65,7 +65,12 @@ export default function Board() {
 
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {loading && <p className="text-gray-500">로딩 중...</p>}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Spinner size="lg" />
+            <p className="text-gray-500 mt-6">로딩 중...</p>
+          </div>
+        )}
 
         {error && <p className="text-red-500">{error}</p>}
 

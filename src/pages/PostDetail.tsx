@@ -2,8 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getPostDetail } from '../api';
 import { useEffect, useState } from 'react';
 import type { Post } from '../types/post';
-import { API_BASE_URL } from '../utils';
-import { Button } from '../components';
+import { API_BASE_URL, formatDate } from '../utils';
+import { Button, Spinner } from '../components';
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -56,27 +56,7 @@ export default function PostDetail() {
         <div className="bg-white rounded-lg shadow p-8 min-h-[340px]">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-[276px]">
-              <svg className="animate-spin h-12 w-12" viewBox="0 0 50 50">
-                <circle
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  fill="none"
-                  stroke="#E5E7EB"
-                  strokeWidth="4"
-                />
-                <circle
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  fill="none"
-                  stroke="#2563EB"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeDasharray="80, 200"
-                  strokeDashoffset="0"
-                />
-              </svg>
+              <Spinner size="lg" />
               <p className="text-gray-500 mt-6">로딩 중...</p>
             </div>
           ) : postDetailData ? (
@@ -90,7 +70,7 @@ export default function PostDetail() {
                 </div>
                 {/* 작성일 */}
                 <p className="text-sm text-gray-500 py-1">
-                  {new Date(postDetailData.createdAt).toLocaleString('ko-KR')}
+                  {formatDate(postDetailData.createdAt)}
                 </p>
               </div>
 
@@ -113,30 +93,7 @@ export default function PostDetail() {
                 <div className="mb-6 relative min-h-[300px]">
                   {imageLoading && (
                     <div className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center transition-opacity duration-300">
-                      <svg
-                        className="animate-spin h-10 w-10"
-                        viewBox="0 0 50 50"
-                      >
-                        <circle
-                          cx="25"
-                          cy="25"
-                          r="20"
-                          fill="none"
-                          stroke="#E5E7EB"
-                          strokeWidth="4"
-                        />
-                        <circle
-                          cx="25"
-                          cy="25"
-                          r="20"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="4"
-                          strokeLinecap="round"
-                          strokeDasharray="80, 200"
-                          strokeDashoffset="0"
-                        />
-                      </svg>
+                      <Spinner size="md" color="white" />
                     </div>
                   )}
                   <img
