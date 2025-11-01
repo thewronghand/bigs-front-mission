@@ -1,40 +1,40 @@
-// 게시판 관련 타입 정의
+// 게시글 관련 타입 정의
 
-export type BoardCategory = 'NOTICE' | 'FREE' | 'QNA' | 'ETC';
+export type PostCategory = 'NOTICE' | 'FREE' | 'QNA' | 'ETC';
 
-export interface BoardCategoriesResponse {
+export interface PostCategoriesResponse {
   NOTICE: string;
   FREE: string;
   QNA: string;
   ETC: string;
 }
 
-export interface Board {
+export interface Post {
   id: number;
   title: string;
   content: string;
-  boardCategory: BoardCategory;
+  boardCategory: PostCategory;
   imageUrl?: string;
   createdAt: string;
 }
 
-export interface BoardListItem {
+export interface PostListItem {
   id: number;
   title: string;
-  category: BoardCategory;
+  category: PostCategory;
   createdAt: string;
 }
 
-export interface BoardCreateRequest {
+export interface PostCreateRequest {
   title: string;
   content: string;
-  category: BoardCategory;
+  category: PostCategory;
 }
 
-export interface BoardUpdateRequest {
+export interface PostUpdateRequest {
   title: string;
   content: string;
-  category: BoardCategory;
+  category: PostCategory;
 }
 
 export interface PageInfo {
@@ -50,8 +50,8 @@ export interface PageInfo {
   paged: boolean;
 }
 
-export interface BoardListResponse {
-  content: BoardListItem[];
+export interface PostListResponse {
+  content: PostListItem[];
   pageable: PageInfo;
   totalPages: number;
   totalElements: number;

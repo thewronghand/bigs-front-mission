@@ -6,10 +6,10 @@ export const ROUTES = {
   HOME: '/',
   SIGN_UP: '/signup',
   SIGN_IN: '/signin',
-  BOARDS: '/boards',
-  BOARD_DETAIL: '/boards/:id',
-  BOARD_NEW: '/boards/new',
-  BOARD_EDIT: '/boards/:id/edit',
+  BOARD: '/boards',
+  POST_DETAIL: '/boards/:id',
+  POST_NEW: '/boards/new',
+  POST_EDIT: '/boards/:id/edit',
 } as const;
 
 export const STORAGE_KEYS = {

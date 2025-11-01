@@ -1,15 +1,15 @@
 import { apiClient } from '../utils/axios';
-import type { BoardListResponse, BoardCreateRequest } from '../types/board';
+import type { PostListResponse, PostCreateRequest } from '../types/post';
 
-export const getBoards = async (page = 0, size = 10): Promise<BoardListResponse> => {
-  const response = await apiClient.get<BoardListResponse>('/boards', {
+export const getPosts = async (page = 0, size = 10): Promise<PostListResponse> => {
+  const response = await apiClient.get<PostListResponse>('/boards', {
     params: { page, size },
   });
   return response.data;
 };
 
-export const createBoard = async (
-  data: BoardCreateRequest,
+export const createPost = async (
+  data: PostCreateRequest,
   file?: File
 ): Promise<{ id: number }> => {
   const formData = new FormData();

@@ -1,15 +1,15 @@
 import toast from 'react-hot-toast';
 import type { NavigateFunction } from 'react-router-dom';
 
-interface BoardFormApiErrorHandlerOptions {
+interface PostFormApiErrorHandlerOptions {
   logout: () => void;
   navigate: NavigateFunction;
   setApiError: (message: string) => void;
 }
 
-export const handleBoardFormApiError = (
+export const handlePostFormApiError = (
   error: unknown,
-  { logout, navigate, setApiError }: BoardFormApiErrorHandlerOptions
+  { logout, navigate, setApiError }: PostFormApiErrorHandlerOptions
 ): void => {
   console.error('API 요청 실패:', error);
 
