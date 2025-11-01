@@ -12,7 +12,10 @@ export const apiClient = axios.create({
 // Request 인터셉터: accessToken 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    // localStorage 우선, 없으면 sessionStorage 확인
+    const accessToken =
+      localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) ||
+      sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -38,12 +41,17 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        // localStorage 우선, 없으면 sessionStorage 확인
+        const refreshToken =
+          localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) ||
+          sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
         if (!refreshToken) {
           // refreshToken이 없으면 로그아웃 처리
           localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+          sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+          sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
           window.location.href = '/signin';
           return Promise.reject(error);
         }
@@ -55,9 +63,12 @@ apiClient.interceptors.response.use(
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        // 새 토큰 저장
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+        // 새 토큰을 원래 저장소에 저장 (localStorage 우선)
+        const storage = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+          ? localStorage
+          : sessionStorage;
+        storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+        storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
         // 원래 요청에 새 토큰 적용 후 재시도
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -66,6 +77,8 @@ apiClient.interceptors.response.use(
         // 리프레시 실패 시 로그아웃
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         window.location.href = '/signin';
         return Promise.reject(refreshError);
       }

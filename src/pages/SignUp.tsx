@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { signUp } from '../api';
 import { isValidEmail, isValidPassword, getPasswordErrorMessage, getPasswordMismatchMessage } from '../utils/validation';
 import { FormInput, PasswordRequirements, SuccessOverlay, ErrorMessage } from '../components/auth';
+import { Button } from '../components';
 import type { SignUpRequest } from '../types/auth';
 
 export default function SignUp() {
@@ -218,17 +219,15 @@ export default function SignUp() {
           <ErrorMessage message={apiError} />
 
           {/* 제출 버튼 */}
-          <button
+          <Button
             type="submit"
             disabled={!isFormValid || isSubmitting}
-            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all ${
-              !isFormValid || isSubmitting
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer'
-            }`}
+            variant="primary"
+            size="lg"
+            className="w-full font-medium"
           >
             {isSubmitting ? '처리 중...' : '회원가입'}
-          </button>
+          </Button>
 
           {/* 로그인 링크 */}
           <div className="text-center">
