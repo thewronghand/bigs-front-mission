@@ -3,23 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { MdDelete } from 'react-icons/md';
 import toast from 'react-hot-toast';
-import { createBoard } from '../api';
+import { createPost } from '../api';
 import { ErrorMessage } from '../components/auth';
 import { Button, ExitConfirmModal, DraftsList } from '../components';
 import { useAuthStore } from '../store/authStore';
-import { handleBoardFormApiError } from '../utils';
-import type { BoardCategory } from '../types/board';
+import { handlePostFormApiError } from '../utils';
+import type { PostCategory } from '../types/post';
 
-interface BoardFormData {
+interface PostFormData {
   title: string;
   content: string;
-  category: BoardCategory;
+  category: PostCategory;
 }
 
-interface BoardDraft {
+interface PostDraft {
   title: string;
   content: string;
-  category: BoardCategory;
+  category: PostCategory;
   timestamp: number;
 }
 
@@ -36,13 +36,13 @@ const MAX_DRAFTS_COUNT = 10; // 최대 임시저장 개수
 const DRAFT_EXPIRY_DAYS = 7; // 임시저장 만료 기간 (일)
 
 // 임시 저장 관리 유틸리티
-const cleanExpiredDrafts = (drafts: BoardDraft[]): BoardDraft[] => {
+const cleanExpiredDrafts = (drafts: PostDraft[]): PostDraft[] => {
   const now = Date.now();
   const expiryTime = DRAFT_EXPIRY_DAYS * 24 * 60 * 60 * 1000; // 7일을 밀리초로
   return drafts.filter((draft) => now - draft.timestamp < expiryTime);
 };
 
-const isDuplicateDraft = (drafts: BoardDraft[], newDraft: BoardDraft): boolean => {
+const isDuplicateDraft = (drafts: PostDraft[], newDraft: PostDraft): boolean => {
   return drafts.some(
     (draft) =>
       draft.title.trim() === newDraft.title.trim() &&
@@ -51,7 +51,7 @@ const isDuplicateDraft = (drafts: BoardDraft[], newDraft: BoardDraft): boolean =
   );
 };
 
-const limitDraftsCount = (drafts: BoardDraft[]): BoardDraft[] => {
+const limitDraftsCount = (drafts: PostDraft[]): PostDraft[] => {
   if (drafts.length <= MAX_DRAFTS_COUNT) return drafts;
   // timestamp 기준 내림차순 정렬 후 최신 MAX_DRAFTS_COUNT개만 유지
   return drafts.sort((a, b) => b.timestamp - a.timestamp).slice(0, MAX_DRAFTS_COUNT);
@@ -133,7 +133,7 @@ const resizeImage = (file: File, maxDimension: number): Promise<File> => {
   });
 };
 
-export default function BoardForm() {
+export default function PostForm() {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
   const {
@@ -142,7 +142,7 @@ export default function BoardForm() {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<BoardFormData>({
+  } = useForm<PostFormData>({
     mode: 'onChange',
     defaultValues: {
       category: 'FREE',
@@ -155,7 +155,7 @@ export default function BoardForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // 임시 저장된 글 목록
-  const [drafts, setDrafts] = useState<BoardDraft[]>([]);
+  const [drafts, setDrafts] = useState<PostDraft[]>([]);
   const [isDraftsExpanded, setIsDraftsExpanded] = useState(false);
 
   // 페이지 로드 시 임시 저장 목록 불러오기 및 정리
@@ -186,7 +186,7 @@ export default function BoardForm() {
     if (title.length > MAX_TITLE_LENGTH || content.length > MAX_CONTENT_LENGTH) return false;
 
     // 중복 체크
-    const currentDraft: BoardDraft = {
+    const currentDraft: PostDraft = {
       title,
       content,
       category: watch('category'),
@@ -253,7 +253,7 @@ export default function BoardForm() {
 
   // 임시 저장 함수
   const saveDraft = (): boolean => {
-    const newDraft: BoardDraft = {
+    const newDraft: PostDraft = {
       title,
       content,
       category: watch('category'),
@@ -299,7 +299,7 @@ export default function BoardForm() {
     if (content.length > MAX_CONTENT_LENGTH) return `내용은 ${MAX_CONTENT_LENGTH}자 이하여야 합니다`;
 
     // 중복 체크
-    const currentDraft: BoardDraft = {
+    const currentDraft: PostDraft = {
       title,
       content,
       category: watch('category'),
@@ -322,7 +322,7 @@ export default function BoardForm() {
   };
 
   // 임시 저장된 글 불러오기
-  const handleLoadDraft = (draft: BoardDraft) => {
+  const handleLoadDraft = (draft: PostDraft) => {
     setValue('title', draft.title);
     setValue('content', draft.content);
     setValue('category', draft.category);
@@ -424,7 +424,7 @@ export default function BoardForm() {
 
   const [apiError, setApiError] = useState('');
 
-  const onSubmit = async (data: BoardFormData) => {
+  const onSubmit = async (data: PostFormData) => {
     setApiError('');
 
     // 서버 전송 전 최종 검증 (클라이언트 우회 방지)
@@ -460,7 +460,7 @@ export default function BoardForm() {
       console.log('게시글 작성 요청:', data);
       console.log('첨부 파일:', selectedFile);
 
-      const response = await createBoard(data, selectedFile || undefined);
+      const response = await createPost(data, selectedFile || undefined);
 
       console.log('작성 완료! 게시글 ID:', response.id);
 
@@ -473,7 +473,7 @@ export default function BoardForm() {
       // 목록으로 이동 (toast 표시 후)
       setTimeout(() => navigate('/boards'), 500);
     } catch (error) {
-      handleBoardFormApiError(error, { logout, navigate, setApiError });
+      handlePostFormApiError(error, { logout, navigate, setApiError });
     }
   };
 

@@ -1,40 +1,44 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getBoards } from '../api';
-import { Button } from '../components';
-import type { BoardListResponse } from '../types/board';
+import { getPosts } from '../api';
+import { Button, Spinner } from '../components';
+import type { PostListResponse } from '../types/post';
 
-export default function BoardList() {
+export default function Board() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const [boardData, setBoardData] = useState<BoardListResponse | null>(null);
+  const [postData, setPostData] = useState<PostListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchBoards = async () => {
+    const fetchPosts = async () => {
       try {
-        console.log('게시판 요청 시작: page=0, size=10');
-        const data = await getBoards(0, 10);
-        console.log('게시판 응답:', data);
+        console.log('게시글 목록 요청 시작: page=0, size=10');
+        const data = await getPosts(0, 10);
+        console.log('게시글 목록 응답:', data);
         console.log('게시글 개수:', data.content.length);
         console.log('총 개수:', data.totalElements);
-        setBoardData(data);
+        setPostData(data);
       } catch (err) {
-        console.error('게시판 조회 실패:', err);
-        setError('게시판을 불러오는데 실패했습니다');
+        console.error('게시글 목록 조회 실패:', err);
+        setError('게시글 목록을 불러오는데 실패했습니다');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBoards();
+    fetchPosts();
   }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/signin');
+  };
+
+  const handlePostClick = (id: number) => {
+    navigate(`/boards/${id}`);
   };
 
   return (
@@ -61,28 +65,33 @@ export default function BoardList() {
 
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {loading && <p className="text-gray-500">로딩 중...</p>}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Spinner size="lg" />
+            <p className="text-gray-500 mt-6">로딩 중...</p>
+          </div>
+        )}
 
         {error && <p className="text-red-500">{error}</p>}
 
-        {boardData && (
+        {postData && (
           <div>
             <p className="mb-4 text-sm text-gray-600">
-              총 {boardData.totalElements}개 / {boardData.totalPages}페이지
+              총 {postData.totalElements}개 / {postData.totalPages}페이지
             </p>
 
             {/* 간단한 데이터 표시 */}
             <div className="space-y-2">
-              {boardData.content.map((board) => (
-                <div key={board.id} className="p-4 bg-white rounded-lg shadow">
+              {postData.content.map((post) => (
+                <div key={post.id} className="p-4 bg-white rounded-lg shadow cursor-pointer" onClick={() => handlePostClick(post.id)}>
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {board.category}
+                        {post.category}
                       </span>
-                      <h3 className="text-lg font-medium mt-2">{board.title}</h3>
+                      <h3 className="text-lg font-medium mt-2">{post.title}</h3>
                     </div>
-                    <p className="text-sm text-gray-500">{board.createdAt}</p>
+                    <p className="text-sm text-gray-500">{post.createdAt}</p>
                   </div>
                 </div>
               ))}
@@ -94,7 +103,7 @@ export default function BoardList() {
                 API 응답 전체 보기 (디버깅용)
               </summary>
               <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto">
-                {JSON.stringify(boardData, null, 2)}
+                {JSON.stringify(postData, null, 2)}
               </pre>
             </details>
           </div>

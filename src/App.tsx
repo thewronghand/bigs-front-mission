@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { SignUp, SignIn, BoardList, BoardDetail, BoardForm } from './pages';
+import { SignUp, SignIn, Board, PostDetail, PostForm } from './pages';
 import { PrivateRoute, PublicRoute } from './components';
 import { ROUTES } from './utils';
 
@@ -29,40 +29,40 @@ function App() {
 
         {/* Private Routes */}
         <Route
-          path={ROUTES.BOARDS}
+          path={ROUTES.BOARD}
           element={
             <PrivateRoute>
-              <BoardList />
+              <Board />
             </PrivateRoute>
           }
         />
         <Route
-          path={ROUTES.BOARD_DETAIL}
+          path={ROUTES.POST_DETAIL}
           element={
             <PrivateRoute>
-              <BoardDetail />
+              <PostDetail />
             </PrivateRoute>
           }
         />
         <Route
-          path={ROUTES.BOARD_NEW}
+          path={ROUTES.POST_NEW}
           element={
             <PrivateRoute>
-              <BoardForm />
+              <PostForm />
             </PrivateRoute>
           }
         />
         <Route
-          path={ROUTES.BOARD_EDIT}
+          path={ROUTES.POST_EDIT}
           element={
             <PrivateRoute>
-              <BoardForm />
+              <PostForm />
             </PrivateRoute>
           }
         />
 
         {/* Default Route */}
-        <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.BOARDS} replace />} />
+        <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.BOARD} replace />} />
       </Routes>
     </BrowserRouter>
   );

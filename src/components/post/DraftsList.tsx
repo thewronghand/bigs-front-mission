@@ -1,18 +1,18 @@
 import { Button } from '../common';
-import type { BoardCategory } from '../../types/board';
+import type { PostCategory } from '../../types/post';
 
-interface BoardDraft {
+interface PostDraft {
   title: string;
   content: string;
-  category: BoardCategory;
+  category: PostCategory;
   timestamp: number;
 }
 
 interface DraftsListProps {
-  drafts: BoardDraft[];
+  drafts: PostDraft[];
   isExpanded: boolean;
   onToggle: () => void;
-  onLoadDraft: (draft: BoardDraft) => void;
+  onLoadDraft: (draft: PostDraft) => void;
   onDeleteDraft: (timestamp: number) => void;
 }
 
