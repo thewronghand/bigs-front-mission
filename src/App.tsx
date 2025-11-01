@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { SignUp, SignIn, BoardList, BoardDetail, BoardForm } from './pages';
 import { PrivateRoute, PublicRoute } from './components';
 import { ROUTES } from './utils';
@@ -6,6 +7,7 @@ import { ROUTES } from './utils';
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="bottom-right" />
       <Routes>
         {/* Public Routes - 로그인 상태면 게시판으로 리다이렉트 */}
         <Route
