@@ -1,13 +1,10 @@
 // 게시글 관련 타입 정의
 
-export type PostCategory = 'NOTICE' | 'FREE' | 'QNA' | 'ETC';
+// 카테고리: 백엔드에서 동적으로 추가될 수 있으므로 string 타입 사용
+export type PostCategory = string;
 
-export interface PostCategoriesResponse {
-  NOTICE: string;
-  FREE: string;
-  QNA: string;
-  ETC: string;
-}
+// 카테고리 응답: 동적으로 추가될 수 있으므로 Record 타입 사용
+export type PostCategoriesResponse = Record<string, string>;
 
 export interface Post {
   id: number;

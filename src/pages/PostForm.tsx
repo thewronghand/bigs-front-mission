@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { MdDelete } from 'react-icons/md';
 import toast from 'react-hot-toast';
-import { createPost } from '../api';
+import { createPost, getCategories } from '../api';
 import { ErrorMessage } from '../components/auth';
 import { Button, ExitConfirmModal, DraftsList } from '../components';
 import { useAuthStore } from '../store/authStore';
@@ -154,9 +154,36 @@ export default function PostForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // 카테고리 목록 (API에서 가져옴)
+  const [categories, setCategories] = useState<Record<string, string> | null>(null);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
   // 임시 저장된 글 목록
   const [drafts, setDrafts] = useState<PostDraft[]>([]);
   const [isDraftsExpanded, setIsDraftsExpanded] = useState(false);
+
+  // 페이지 로드 시 카테고리 목록 가져오기
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('카테고리 목록 조회 실패:', error);
+        // 실패해도 기본 카테고리는 사용 가능하도록
+        setCategories({
+          FREE: '자유',
+          NOTICE: '공지',
+          QNA: 'Q&A',
+          ETC: '기타',
+        });
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // 페이지 로드 시 임시 저장 목록 불러오기 및 정리
   useEffect(() => {
@@ -506,16 +533,27 @@ export default function PostForm() {
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
               카테고리
             </label>
-            <select
-              id="category"
-              {...register('category', { required: '카테고리를 선택해주세요' })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="FREE">자유</option>
-              <option value="NOTICE">공지</option>
-              <option value="QNA">질문</option>
-              <option value="ETC">기타</option>
-            </select>
+            {categoriesLoading || !categories ? (
+              <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white flex items-center min-h-[46px]">
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </div>
+              </div>
+            ) : (
+              <select
+                id="category"
+                {...register('category', { required: '카테고리를 선택해주세요' })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {Object.entries(categories).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            )}
             {errors.category && (
               <p className="text-sm text-red-500 mt-1">{errors.category.message}</p>
             )}
