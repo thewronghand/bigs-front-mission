@@ -52,3 +52,32 @@ export const getCategories = async (): Promise<PostCategoriesResponse> => {
   return response.data;
 };
 
+export const updatePost = async (
+  id: number,
+  data: PostCreateRequest,
+  file?: File
+): Promise<void> => {
+  const formData = new FormData();
+
+  // request 필드: JSON 형식
+  const requestBlob = new Blob([JSON.stringify(data)], {
+    type: 'application/json',
+  });
+  formData.append('request', requestBlob);
+
+  // file 필드 (선택)
+  if (file) {
+    formData.append('file', file);
+  }
+
+  await apiClient.patch(`/boards/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+export const deletePost = async (id: number): Promise<void> => {
+  await apiClient.delete(`/boards/${id}`);
+};
+
