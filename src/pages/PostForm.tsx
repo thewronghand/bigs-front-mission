@@ -633,12 +633,7 @@ export default function PostForm() {
     try {
       if (isEditMode && id) {
         // 수정 모드
-        console.log('게시글 수정 요청:', data);
-        console.log('첨부 파일:', selectedFile);
-
         await updatePost(Number(id), data, selectedFile || undefined);
-
-        console.log('수정 완료! 게시글 ID:', id);
 
         // 제출 완료 표시 (나가기 경고 비활성화)
         setIsSubmitted(true);
@@ -650,12 +645,7 @@ export default function PostForm() {
         setTimeout(() => navigate(`/boards/${id}`), 500);
       } else {
         // 작성 모드
-        console.log('게시글 작성 요청:', data);
-        console.log('첨부 파일:', selectedFile);
-
         const response = await createPost(data, selectedFile || undefined);
-
-        console.log('작성 완료! 게시글 ID:', response.id);
 
         // 제출 완료 표시 (나가기 경고 비활성화)
         setIsSubmitted(true);
