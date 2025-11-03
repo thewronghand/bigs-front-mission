@@ -2,16 +2,21 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SignUp, SignIn, Board, PostDetail, PostForm } from './pages';
 import { PrivateRoute, PublicRoute, ScrollToTop } from './components';
+import { SessionExpiredOverlay } from './components/auth';
 import { ROUTES } from './utils';
 import { NavigationBlockerProvider } from './contexts/NavigationBlockerContext';
+import { useAuthStore } from './store/authStore';
 import AuthenticatedLayout from './layouts/AuthenticatedLayout';
 
 function App() {
+  const showSessionExpired = useAuthStore((state) => state.showSessionExpired);
+
   return (
     <BrowserRouter>
       <NavigationBlockerProvider>
         <ScrollToTop />
         <Toaster position="bottom-right" />
+        <SessionExpiredOverlay isVisible={showSessionExpired} />
         <Routes>
         {/* Public Routes - 로그인 상태면 게시판으로 리다이렉트 */}
         <Route
