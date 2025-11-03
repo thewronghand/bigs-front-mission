@@ -1,9 +1,17 @@
 import { apiClient } from '../utils/axios';
 import type { PostListResponse, PostCreateRequest, Post, PostCategoriesResponse } from '../types/post';
 
-export const getPosts = async (page = 0, size = 10): Promise<PostListResponse> => {
+export const getPosts = async (
+  page = 0,
+  size = 10,
+  sortOrder: 'asc' | 'desc' = 'desc'
+): Promise<PostListResponse> => {
   const response = await apiClient.get<PostListResponse>('/boards', {
-    params: { page, size },
+    params: {
+      page,
+      size,
+      sort: `createdAt,${sortOrder}`, // 정렬 순서 동적 적용
+    },
   });
   return response.data;
 };
