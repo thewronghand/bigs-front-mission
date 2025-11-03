@@ -6,6 +6,7 @@ import { isValidEmail, isValidPassword, getPasswordErrorMessage, getPasswordMism
 import { FormInput, PasswordRequirements, SuccessOverlay, ErrorMessage } from '../components/auth';
 import { Button } from '../components';
 import type { SignUpRequest } from '../types/auth';
+import logoSvg from '../assets/logo.svg';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -108,7 +109,13 @@ export default function SignUp() {
       <SuccessOverlay isVisible={isSuccess} />
 
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-8">회원가입</h1>
+        {/* 브랜딩 */}
+        <div className="flex flex-col items-center mb-8">
+          <img src={logoSvg} alt="BIGS Logo" className="w-16 h-16 mb-3" />
+          <h1 className="text-3xl font-bold text-gray-800">BIGS Board</h1>
+        </div>
+
+        <h2 className="text-2xl font-bold text-center mb-8">회원가입</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* 이메일 */}
