@@ -50,40 +50,40 @@ export default function PostCard({ post, onClick, onEdit, onDelete }: PostCardPr
 
   return (
     <div
-      className={`p-4 bg-white rounded-lg shadow cursor-pointer transition-all relative ${
-        showMenu ? 'shadow-md z-50' : 'hover:shadow-md hover:scale-[1.01]'
+      className={`p-3 xs:p-4 bg-white rounded-lg shadow cursor-pointer transition-all relative ${
+        showMenu ? 'shadow-md z-30' : 'hover:shadow-md hover:scale-[1.01]'
       }`}
       onClick={() => onClick(post.id)}
     >
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+      <div className="flex justify-between items-center mb-1.5 xs:mb-2">
+        <span className="text-[10px] xs:text-xs bg-blue-100 text-blue-800 px-1.5 xs:px-2 py-0.5 xs:py-1 rounded">
           {post.category}
         </span>
-        <div className="flex items-center gap-2">
-          <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+        <div className="flex items-center gap-1.5 xs:gap-2">
+          <p className="text-[10px] xs:text-xs text-gray-500">{formatDate(post.createdAt)}</p>
 
           {/* ... 메뉴 버튼 */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={handleMenuClick}
-              className="p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+              className="p-0.5 xs:p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
               aria-label="메뉴"
             >
-              <BsThreeDotsVertical className="text-gray-600" />
+              <BsThreeDotsVertical className="text-gray-600 text-sm xs:text-base" />
             </button>
 
             {/* 팝오버 메뉴 */}
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[100px]">
+              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 min-w-[90px] xs:min-w-[100px]">
                 <button
                   onClick={handleEdit}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="w-full px-3 xs:px-4 py-1.5 xs:py-2 text-left text-xs xs:text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   수정
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                  className="w-full px-3 xs:px-4 py-1.5 xs:py-2 text-left text-xs xs:text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                 >
                   삭제
                 </button>
@@ -92,7 +92,7 @@ export default function PostCard({ post, onClick, onEdit, onDelete }: PostCardPr
           </div>
         </div>
       </div>
-      <h3 className="text-lg font-medium line-clamp-2">{post.title}</h3>
+      <h3 className="text-base xs:text-lg font-medium line-clamp-2">{post.title}</h3>
     </div>
   );
 }
