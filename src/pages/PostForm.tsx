@@ -453,6 +453,7 @@ export default function PostForm() {
     setValue('title', draft.title);
     setValue('content', draft.content);
     setValue('category', draft.category);
+    toast.success('임시 저장된 내용을 불러왔습니다');
   };
 
   // 임시 저장된 글 삭제
@@ -673,12 +674,12 @@ export default function PostForm() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 본문 */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-3 xs:px-4 py-4 xs:py-6 sm:py-8">
         {/* 초기 데이터 로딩 중 (수정 모드) */}
         {initialDataLoading && (
-          <div className="flex flex-col items-center justify-center py-20">
+          <div className="flex flex-col items-center justify-center py-12 xs:py-16 sm:py-20">
             <Spinner size="lg" />
-            <p className="text-gray-500 mt-6">게시글 정보를 불러오는 중...</p>
+            <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">게시글 정보를 불러오는 중...</p>
           </div>
         )}
 
@@ -695,14 +696,14 @@ export default function PostForm() {
               />
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 xs:space-y-6 bg-white p-4 xs:p-6 sm:p-8 rounded-lg shadow">
           {/* 카테고리 */}
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="category" className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
               카테고리
             </label>
             {categoriesLoading || !categories ? (
-              <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white flex items-center min-h-[46px]">
+              <div className="w-full px-3 xs:px-4 py-2 xs:py-3 border border-gray-300 rounded-lg bg-white flex items-center min-h-[40px] xs:min-h-[46px]">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -713,7 +714,7 @@ export default function PostForm() {
               <select
                 id="category"
                 {...register('category', { required: '카테고리를 선택해주세요' })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 xs:px-4 py-2 xs:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm xs:text-base"
               >
                 {Object.entries(categories).map(([key, label]) => (
                   <option key={key} value={key}>
@@ -729,11 +730,11 @@ export default function PostForm() {
 
           {/* 제목 */}
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            <div className="flex justify-between items-center mb-1.5 xs:mb-2">
+              <label htmlFor="title" className="block text-xs xs:text-sm font-medium text-gray-700">
                 제목
               </label>
-              <span className={`text-sm ${title.length > MAX_TITLE_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
+              <span className={`text-xs xs:text-sm ${title.length > MAX_TITLE_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
                 {title.length}/{MAX_TITLE_LENGTH}
               </span>
             </div>
@@ -745,11 +746,11 @@ export default function PostForm() {
                 minLength: { value: 2, message: '제목은 2자 이상이어야 합니다' },
                 maxLength: { value: MAX_TITLE_LENGTH, message: `제목은 ${MAX_TITLE_LENGTH}자 이하여야 합니다` },
               })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 xs:px-4 py-2 xs:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm xs:text-base"
               placeholder="제목을 입력하세요"
             />
             {errors.title && (
-              <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+              <p className="text-xs xs:text-sm text-red-500 mt-1">{errors.title.message}</p>
             )}
           </div>
 
@@ -785,7 +786,7 @@ export default function PostForm() {
                   </div>
                 )}
               </div>
-              <span className={`text-sm ${content.length > MAX_CONTENT_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
+              <span className={`text-xs xs:text-sm ${content.length > MAX_CONTENT_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
                 {content.length}/{MAX_CONTENT_LENGTH}
               </span>
             </div>
@@ -797,17 +798,17 @@ export default function PostForm() {
                 maxLength: { value: MAX_CONTENT_LENGTH, message: `내용은 ${MAX_CONTENT_LENGTH}자 이하여야 합니다` },
               })}
               rows={10}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 xs:px-4 py-2 xs:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm xs:text-base"
               placeholder="내용을 입력하세요"
             />
             {errors.content && (
-              <p className="text-sm text-red-500 mt-1">{errors.content.message}</p>
+              <p className="text-xs xs:text-sm text-red-500 mt-1">{errors.content.message}</p>
             )}
           </div>
 
           {/* 이미지 첨부 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
               이미지 첨부 (선택)
             </label>
 
@@ -878,11 +879,11 @@ export default function PostForm() {
                   </div>
                   {/* 파일 정보 */}
                   {selectedFile && (
-                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                      <p className="text-sm text-gray-700 font-medium truncate">
+                    <div className="px-3 xs:px-4 py-2 xs:py-3 bg-gray-50 border-t border-gray-200">
+                      <p className="text-xs xs:text-sm text-gray-700 font-medium truncate">
                         {selectedFile.name}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-[10px] xs:text-xs text-gray-500 mt-1">
                         {formatFileSize(selectedFile.size)}
                       </p>
                     </div>
@@ -892,7 +893,7 @@ export default function PostForm() {
             </div>
 
             {fileError && (
-              <p className="text-sm text-red-500 mt-2">{fileError}</p>
+              <p className="text-xs xs:text-sm text-red-500 mt-2">{fileError}</p>
             )}
           </div>
 
@@ -900,13 +901,14 @@ export default function PostForm() {
           <ErrorMessage message={apiError} />
 
           {/* 버튼 */}
-          <div className="flex gap-4">
+          <div className="flex gap-2 xs:gap-3 sm:gap-4">
             <Button
               type="button"
               onClick={handleNavigateBack}
               variant="secondary"
               size="lg"
               fullWidth
+              className="text-sm xs:text-base"
             >
               취소
             </Button>
@@ -916,6 +918,7 @@ export default function PostForm() {
               variant="primary"
               size="lg"
               fullWidth
+              className="text-sm xs:text-base"
             >
               {isSubmitting
                 ? isEditMode

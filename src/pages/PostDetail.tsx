@@ -80,51 +80,51 @@ export default function PostDetail() {
       />
 
       {/* 본문 */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-3 xs:px-4 py-4 xs:py-6 sm:py-8">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-600">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 xs:p-4">
+            <p className="text-red-600 text-sm xs:text-base">{error}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow p-8 min-h-[340px]">
+        <div className="bg-white rounded-lg shadow p-4 xs:p-6 sm:p-8 min-h-[340px]">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-[276px]">
               <Spinner size="lg" />
-              <p className="text-gray-500 mt-6">로딩 중...</p>
+              <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">로딩 중...</p>
             </div>
           ) : postDetailData ? (
             <div key={postDetailData.id} className="animate-fadeIn">
               {/* 카테고리 */}
-              <div className="mb-4 flex justify-between">
+              <div className="mb-3 xs:mb-4 flex justify-between items-start flex-col xs:flex-row gap-2 xs:gap-0">
                 <div>
-                  <span className="inline-block text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded">
+                  <span className="inline-block text-[10px] xs:text-xs bg-blue-100 text-blue-800 px-2 xs:px-3 py-0.5 xs:py-1 rounded">
                     {postDetailData.boardCategory}
                   </span>
                 </div>
                 {/* 작성일 */}
-                <p className="text-sm text-gray-500 py-1">
+                <p className="text-xs xs:text-sm text-gray-500 xs:py-1">
                   {formatDate(postDetailData.createdAt)}
                 </p>
               </div>
 
               {/* 제목 */}
-              <h2 className="text-3xl font-bold text-gray-800 mb-4 wrap-break-word">
+              <h2 className="text-xl xs:text-2xl sm:text-3xl font-bold text-gray-800 mb-3 xs:mb-4 wrap-break-word">
                 {postDetailData.title}
               </h2>
 
-              <div className="mb-4 flex gap-1.5 justify-end">
-                <Button variant="secondary" size="xs" onClick={handleEdit}>
+              <div className="mb-3 xs:mb-4 flex gap-1.5 xs:gap-2 justify-end">
+                <Button variant="secondary" size="xs" onClick={handleEdit} className="text-xs xs:text-sm px-2 xs:px-3 py-1 xs:py-1.5">
                   수정
                 </Button>
-                <Button variant="danger" size="xs" onClick={handleDelete}>
+                <Button variant="danger" size="xs" onClick={handleDelete} className="text-xs xs:text-sm px-2 xs:px-3 py-1 xs:py-1.5">
                   삭제
                 </Button>
               </div>
 
               {/* 이미지 */}
               {postDetailData.imageUrl && (
-                <div className="mb-6 relative min-h-[300px]">
+                <div className="mb-4 xs:mb-6 relative min-h-[200px] xs:min-h-[300px]">
                   {imageLoading && (
                     <div className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center transition-opacity duration-300">
                       <Spinner size="md" color="white" />
@@ -135,7 +135,7 @@ export default function PostDetail() {
                     alt="게시글 이미지"
                     className={`${
                       imageLoading ? 'opacity-0' : 'opacity-100'
-                    } max-w-full max-h-[800px] object-contain rounded-lg shadow transition-opacity duration-500`}
+                    } max-w-full max-h-[600px] xs:max-h-[800px] object-contain rounded-lg shadow transition-opacity duration-500`}
                     onLoad={() => setImageLoading(false)}
                     onError={() => setImageLoading(false)}
                   />
@@ -144,7 +144,7 @@ export default function PostDetail() {
 
               {/* 내용 */}
               <div className="prose max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                <p className="text-sm xs:text-base text-gray-700 whitespace-pre-wrap leading-relaxed">
                   {postDetailData.content}
                 </p>
               </div>
