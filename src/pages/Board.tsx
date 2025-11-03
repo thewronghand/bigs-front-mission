@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MdInbox } from 'react-icons/md';
-import { useAuthStore } from '../store/authStore';
 import { getPosts } from '../api';
-import { Button, Spinner, Pagination, PostCard, BoardControls } from '../components';
+import { Spinner, Pagination, PostCard, BoardControls } from '../components';
 import type { PostListResponse } from '../types/post';
 
 export default function Board() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, logout } = useAuthStore();
   const [postData, setPostData] = useState<PostListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -36,11 +34,6 @@ export default function Board() {
     fetchPosts();
   }, [currentPage, sortOrder, pageSize]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
-  };
-
   const handlePostClick = (id: number) => {
     navigate(`/boards/${id}`);
   };
@@ -55,30 +48,6 @@ export default function Board() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">게시판</h1>
-          <div className="flex items-center gap-4">
-            {user && (
-              <div className="text-sm text-gray-600">
-                <span className="font-medium">{user.name}</span>님
-              </div>
-            )}
-            <Button
-              onClick={() => navigate('/boards/new')}
-              variant="primary"
-              size="md"
-            >
-              글쓰기
-            </Button>
-            <Button onClick={handleLogout} variant="secondary" size="md">
-              로그아웃
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {error && <p className="text-red-500">{error}</p>}

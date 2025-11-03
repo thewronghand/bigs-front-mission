@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getPostDetail } from '../api';
 import { useEffect, useState } from 'react';
 import type { Post } from '../types/post';
@@ -7,7 +7,6 @@ import { Button, Spinner } from '../components';
 
 export default function PostDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [postDetailData, setPostDetailData] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,20 +30,6 @@ export default function PostDetail() {
   }, [id]);
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">게시글 상세</h1>
-          <Button
-            onClick={() => navigate('/boards')}
-            variant="secondary"
-            size="md"
-          >
-            목록으로
-          </Button>
-        </div>
-      </header>
-
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {error && (
