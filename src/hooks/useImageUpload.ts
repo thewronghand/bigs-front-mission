@@ -12,11 +12,13 @@ export const useImageUpload = () => {
   const [preview, setPreview] = useState<string>('');
   const [fileError, setFileError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [hasDeletedImage, setHasDeletedImage] = useState(false); // 기존 이미지 삭제 추적
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 공통 파일 처리 함수
   const processFile = async (file: File, clearInput?: () => void) => {
     setFileError('');
+    setHasDeletedImage(false); // 새 파일 선택 시 삭제 플래그 리셋
 
     // 1. 원본 파일 크기 제한 (메모리 보호용)
     if (file.size > MAX_ORIGINAL_FILE_SIZE) {
@@ -135,6 +137,11 @@ export const useImageUpload = () => {
   };
 
   const handleRemoveImage = () => {
+    // 기존 이미지(서버 URL)를 삭제하는 경우 추적
+    if (preview && (preview.startsWith('http') || preview.includes('/media/'))) {
+      setHasDeletedImage(true);
+    }
+
     setSelectedFile(null);
     setPreview('');
     setFileError('');
@@ -149,6 +156,7 @@ export const useImageUpload = () => {
     setPreview,
     fileError,
     isDragging,
+    hasDeletedImage,
     fileInputRef,
     handleFileChange,
     handleDragEnter,
