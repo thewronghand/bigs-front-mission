@@ -288,12 +288,6 @@ npm run preview
 - CORS 설정 완료
 - JWT 인증 방식
 
-## 브라우저 지원
-
-- Chrome (최신)
-- Firefox (최신)
-- Safari (최신)
-- Edge (최신)
 
 ## 라이선스
 
