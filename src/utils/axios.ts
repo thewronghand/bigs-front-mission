@@ -12,10 +12,8 @@ export const apiClient = axios.create({
 // Request 인터셉터: accessToken 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    // localStorage 우선, 없으면 sessionStorage 확인
-    const accessToken =
-      localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) ||
-      sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    // sessionStorage에서 accessToken 가져오기
+    const accessToken = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -38,45 +36,47 @@ apiClient.interceptors.response.use(
 
     // 401 에러이고, 재시도하지 않은 요청인 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log('[Auth] 401 에러 발생, 토큰 리프레시 시도');
       originalRequest._retry = true;
 
       try {
-        // localStorage 우선, 없으면 sessionStorage 확인
-        const refreshToken =
-          localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) ||
-          sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        // sessionStorage에서 refreshToken 가져오기
+        const refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
         if (!refreshToken) {
+          console.log('[Auth] refreshToken 없음, 로그인 페이지로 이동');
           // refreshToken이 없으면 로그아웃 처리
-          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-          localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
           sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
           window.location.href = '/signin';
           return Promise.reject(error);
         }
 
+        console.log('[Auth] refreshToken 발견, 리프레시 API 호출');
         // 토큰 리프레시 요청
         const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
           refreshToken,
         });
 
+        console.log('[Auth] 토큰 리프레시 성공');
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        // 새 토큰을 원래 저장소에 저장 (localStorage 우선)
-        const storage = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
-          ? localStorage
-          : sessionStorage;
-        storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-        storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+        // sessionStorage에 새 토큰 저장
+        sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+        sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
         // 원래 요청에 새 토큰 적용 후 재시도
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // 리프레시 실패 시 로그아웃
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        console.error('[Auth] 토큰 리프레시 실패:', refreshError);
+        if (axios.isAxiosError(refreshError) && refreshError.response) {
+          console.error('[Auth] 리프레시 API 응답:', {
+            status: refreshError.response.status,
+            data: refreshError.response.data,
+          });
+        }
+        // 리프레시 실패 시 로그아웃 및 로그인 페이지로 이동
         sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         window.location.href = '/signin';
