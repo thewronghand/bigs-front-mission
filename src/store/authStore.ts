@@ -14,6 +14,7 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  showSessionExpired: boolean;
 
   // 액션
   login: (accessToken: string, refreshToken: string) => void;
@@ -21,6 +22,7 @@ interface AuthState {
   setUser: (user: User) => void;
   logout: () => void;
   loadFromStorage: () => void;
+  setSessionExpired: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -28,6 +30,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   refreshToken: null,
   isAuthenticated: false,
+  showSessionExpired: false,
 
   login: (accessToken, refreshToken) => {
     // JWT 디코딩해서 사용자 정보 추출
@@ -87,5 +90,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     } else {
       console.log('[Auth] sessionStorage에 토큰 없음');
     }
+  },
+
+  setSessionExpired: (value) => {
+    set({ showSessionExpired: value });
   },
 }));

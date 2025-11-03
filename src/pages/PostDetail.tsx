@@ -13,6 +13,7 @@ export default function PostDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [imageLoading, setImageLoading] = useState(true);
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -32,6 +33,23 @@ export default function PostDetail() {
 
     fetchPostDetail();
   }, [id]);
+
+  // 이미지 프리로드 및 크기 계산
+  useEffect(() => {
+    if (postDetailData?.imageUrl) {
+      setImageLoading(true);
+      const img = new Image();
+      img.src = `${API_BASE_URL}${postDetailData.imageUrl}`;
+      img.onload = () => {
+        // 원본 크기 저장
+        setImageDimensions({ width: img.width, height: img.height });
+        setImageLoading(false);
+      };
+      img.onerror = () => {
+        setImageLoading(false);
+      };
+    }
+  }, [postDetailData?.imageUrl]);
 
   const handleEdit = () => {
     navigate(`/boards/${id}/edit`);
@@ -88,7 +106,7 @@ export default function PostDetail() {
         )}
 
         <div className="bg-white rounded-lg shadow p-4 xs:p-6 sm:p-8 min-h-[340px]">
-          {loading ? (
+          {loading || (postDetailData?.imageUrl && imageLoading) ? (
             <div className="flex flex-col items-center justify-center h-[276px]">
               <Spinner size="lg" />
               <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">로딩 중...</p>
@@ -124,20 +142,13 @@ export default function PostDetail() {
 
               {/* 이미지 */}
               {postDetailData.imageUrl && (
-                <div className="mb-4 xs:mb-6 relative min-h-[200px] xs:min-h-[300px]">
-                  {imageLoading && (
-                    <div className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center transition-opacity duration-300">
-                      <Spinner size="md" color="white" />
-                    </div>
-                  )}
+                <div className="mb-4 xs:mb-6">
                   <img
                     src={`${API_BASE_URL}${postDetailData.imageUrl}`}
                     alt="게시글 이미지"
-                    className={`${
-                      imageLoading ? 'opacity-0' : 'opacity-100'
-                    } max-w-full max-h-[600px] xs:max-h-[800px] object-contain rounded-lg shadow transition-opacity duration-500`}
-                    onLoad={() => setImageLoading(false)}
-                    onError={() => setImageLoading(false)}
+                    width={imageDimensions?.width}
+                    height={imageDimensions?.height}
+                    className="max-w-full max-h-[600px] xs:max-h-[800px] h-auto rounded-lg shadow"
                   />
                 </div>
               )}
