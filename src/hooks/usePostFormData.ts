@@ -173,19 +173,20 @@ export const usePostFormData = ({
 
         // 상세 페이지로 이동 (toast 표시 후)
         setTimeout(() => navigate(`/boards/${id}`), 500);
-      } else {
-        // 작성 모드
-        await createPost(data, selectedFile || undefined);
-
-        // 제출 완료 표시 (나가기 경고 비활성화)
-        setIsSubmitted(true);
-
-        // 성공 toast
-        toast.success('게시글이 작성되었습니다!');
-
-        // 목록으로 이동 (toast 표시 후)
-        setTimeout(() => navigate('/boards'), 500);
+        return;
       }
+
+      // 작성 모드
+      await createPost(data, selectedFile || undefined);
+
+      // 제출 완료 표시 (나가기 경고 비활성화)
+      setIsSubmitted(true);
+
+      // 성공 toast
+      toast.success('게시글이 작성되었습니다!');
+
+      // 목록으로 이동 (toast 표시 후)
+      setTimeout(() => navigate('/boards'), 500);
     } catch (error) {
       handlePostFormApiError(error, { setApiError });
     }

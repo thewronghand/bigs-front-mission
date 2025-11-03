@@ -40,26 +40,26 @@ export const useFormNavigation = ({
 
   // 작성 중인 내용이 있는지 확인
   const hasUnsavedChanges = (() => {
-    if (isEditMode && initialData) {
-      // 수정 모드: 초기 데이터와 비교
-      const titleChanged = title !== initialData.title;
-      const contentChanged = content !== initialData.content;
-      const categoryChanged = category !== initialData.category;
-
-      // 이미지 변경 감지
-      const imageChanged = (() => {
-        // 새 이미지 선택한 경우
-        if (selectedFile) return true;
-        // 기존 이미지 삭제한 경우
-        if (initialData.imageUrl && !preview) return true;
-        return false;
-      })();
-
-      return titleChanged || contentChanged || categoryChanged || imageChanged;
-    } else {
-      // 작성 모드: 입력값이 있는지만 확인
+    // 작성 모드: 입력값이 있는지만 확인
+    if (!isEditMode || !initialData) {
       return title.trim().length > 0 || content.trim().length > 0 || selectedFile !== null;
     }
+
+    // 수정 모드: 초기 데이터와 비교
+    const titleChanged = title !== initialData.title;
+    const contentChanged = content !== initialData.content;
+    const categoryChanged = category !== initialData.category;
+
+    // 이미지 변경 감지
+    const imageChanged = (() => {
+      // 새 이미지 선택한 경우
+      if (selectedFile) return true;
+      // 기존 이미지 삭제한 경우
+      if (initialData.imageUrl && !preview) return true;
+      return false;
+    })();
+
+    return titleChanged || contentChanged || categoryChanged || imageChanged;
   })();
 
   // 페이지 벗어날 때 브라우저 경고 (새로고침, 탭 닫기 등)
@@ -117,9 +117,10 @@ export const useFormNavigation = ({
   const handleNavigateBack = () => {
     if (hasUnsavedChanges && !isSubmitted) {
       setShowExitModal(true);
-    } else {
-      navigate('/boards');
+      return;
     }
+
+    navigate('/boards');
   };
 
   const handleExitWithoutSaving = () => {

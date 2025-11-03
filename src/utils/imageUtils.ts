@@ -25,16 +25,14 @@ export const resizeImage = (file: File, maxDimension: number): Promise<File> => 
       let newWidth = width;
       let newHeight = height;
 
-      if (width > height) {
-        if (width > maxDimension) {
-          newWidth = maxDimension;
-          newHeight = (height * maxDimension) / width;
-        }
-      } else {
-        if (height > maxDimension) {
-          newHeight = maxDimension;
-          newWidth = (width * maxDimension) / height;
-        }
+      if (width > height && width > maxDimension) {
+        newWidth = maxDimension;
+        newHeight = (height * maxDimension) / width;
+      }
+
+      if (height >= width && height > maxDimension) {
+        newHeight = maxDimension;
+        newWidth = (width * maxDimension) / height;
       }
 
       // Canvas로 리사이징
