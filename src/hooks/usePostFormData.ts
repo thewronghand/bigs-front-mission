@@ -99,7 +99,6 @@ export const usePostFormData = ({
           img.onload = () => {
             // 1x1 투명 이미지 감지 (삭제된 이미지로 간주)
             if (img.naturalWidth === 1 && img.naturalHeight === 1) {
-              console.log('[Image Filter] 1x1 투명 이미지 감지, 표시 안 함');
               return;
             }
 
@@ -159,7 +158,6 @@ export const usePostFormData = ({
 
         // 이미지 삭제 시 1x1 투명 PNG 전송
         if (hasDeletedImage && !selectedFile) {
-          console.log('[Image Delete] 투명 이미지 생성 및 전송');
           fileToSend = await createTransparentImageAsync();
         }
 
