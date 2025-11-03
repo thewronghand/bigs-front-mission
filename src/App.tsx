@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SignUp, SignIn, Board, PostDetail, PostForm } from './pages';
@@ -10,12 +11,43 @@ import AuthenticatedLayout from './layouts/AuthenticatedLayout';
 
 function App() {
   const showSessionExpired = useAuthStore((state) => state.showSessionExpired);
+  const [isDesktop, setIsDesktop] = useState(
+    window.matchMedia('(min-width: 768px)').matches
+  );
+
+  useEffect(() => {
+    // Tailwind의 md 브레이크포인트와 동일 (768px)
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDesktop(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   return (
     <BrowserRouter>
       <NavigationBlockerProvider>
         <ScrollToTop />
-        <Toaster position="bottom-right" />
+        <Toaster
+          position={isDesktop ? 'top-center' : 'bottom-right'}
+          toastOptions={{
+            // 반응형 스타일
+            style: {
+              fontSize: isDesktop ? '16px' : '14px',
+              padding: isDesktop ? '16px 20px' : '12px 16px',
+              minWidth: isDesktop ? '320px' : '250px',
+              maxWidth: '90vw',
+            },
+          }}
+          containerStyle={
+            isDesktop
+              ? { top: '80px' }
+              : { bottom: '16px', right: '16px' }
+          }
+        />
         <SessionExpiredOverlay isVisible={showSessionExpired} />
         <Routes>
         {/* Public Routes - 로그인 상태면 게시판으로 리다이렉트 */}
