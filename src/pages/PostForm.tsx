@@ -8,6 +8,7 @@ import { ErrorMessage } from '../components/auth';
 import { Button, ExitConfirmModal, DraftsList } from '../components';
 import { useAuthStore } from '../store/authStore';
 import { handlePostFormApiError } from '../utils';
+import { useNavigationBlocker } from '../contexts/NavigationBlockerContext';
 import type { PostCategory } from '../types/post';
 
 interface PostFormData {
@@ -136,6 +137,7 @@ const resizeImage = (file: File, maxDimension: number): Promise<File> => {
 export default function PostForm() {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
+  const { registerBlocker, unregisterBlocker } = useNavigationBlocker();
   const {
     register,
     handleSubmit,
@@ -265,6 +267,23 @@ export default function PostForm() {
   // 나가기 확인 모달
   const [showExitModal, setShowExitModal] = useState(false);
 
+  // Context를 통한 navigation blocker 등록
+  useEffect(() => {
+    const blocker = (to: string) => {
+      if (hasUnsavedChanges && !isSubmitted) {
+        setShowExitModal(true);
+        return true; // block navigation
+      }
+      return false; // allow navigation
+    };
+
+    registerBlocker(blocker);
+
+    return () => {
+      unregisterBlocker();
+    };
+  }, [hasUnsavedChanges, isSubmitted, registerBlocker, unregisterBlocker]);
+
   const handleNavigateBack = () => {
     if (hasUnsavedChanges && !isSubmitted) {
       setShowExitModal(true);
@@ -275,6 +294,8 @@ export default function PostForm() {
 
   const handleExitWithoutSaving = () => {
     setShowExitModal(false);
+    // blocker 무시하고 강제로 navigation
+    setIsSubmitted(true); // blocker가 더 이상 동작하지 않도록
     navigate('/boards');
   };
 
@@ -313,6 +334,8 @@ export default function PostForm() {
     const saved = saveDraft();
     if (saved) {
       setShowExitModal(false);
+      // blocker 무시하고 강제로 navigation
+      setIsSubmitted(true); // blocker가 더 이상 동작하지 않도록
       navigate('/boards');
     }
     // 저장 실패 시 모달은 유지 (saveDraft 내부에서 alert 표시)
@@ -346,6 +369,7 @@ export default function PostForm() {
 
   const handleCancelExit = () => {
     setShowExitModal(false);
+    // 모달만 닫고 navigation은 취소됨 (blocker가 이미 막았음)
   };
 
   // 임시 저장된 글 불러오기
@@ -506,16 +530,6 @@ export default function PostForm() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">게시글 작성</h1>
-          <Button onClick={handleNavigateBack} variant="secondary" size="md">
-            목록으로
-          </Button>
-        </div>
-      </header>
-
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* 임시 저장된 글 목록 */}
