@@ -3,10 +3,10 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
 import { signUp } from '../api';
 import { isValidEmail, isValidPassword, getPasswordErrorMessage, getPasswordMismatchMessage } from '../utils/validation';
-import { FormInput, PasswordRequirements, SuccessOverlay, ErrorMessage } from '../components/auth';
+import { FormInput, PasswordRequirements, SuccessOverlay, ErrorMessage, BrandingSection } from '../components/auth';
 import { Button } from '../components';
 import type { SignUpRequest } from '../types/auth';
-import logoSvg from '../assets/logo.svg';
+import logoSvg from '../assets/logo.svg'; // 모바일용
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -105,17 +105,22 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 relative">
       <SuccessOverlay isVisible={isSuccess} />
 
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        {/* 브랜딩 */}
-        <div className="flex flex-col items-center mb-8">
+      {/* 데스크탑 브랜딩 영역 (md 이상에서만 표시) */}
+      <BrandingSection />
+
+      {/* 회원가입 폼 영역 */}
+      <div className="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center p-4 xs:p-6 sm:p-8">
+        <div className="max-w-md w-full bg-white md:bg-transparent rounded-lg md:rounded-none shadow-md md:shadow-none p-6 xs:p-8">
+        {/* 브랜딩 (모바일/태블릿만) */}
+        <div className="flex flex-col items-center mb-8 md:hidden">
           <img src={logoSvg} alt="BIGS Logo" className="w-16 h-16 mb-3" />
           <h1 className="text-3xl font-bold text-gray-800">BIGS Board</h1>
         </div>
 
-        <h2 className="text-2xl font-bold text-center mb-8">회원가입</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-gray-800">회원가입</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* 이메일 */}
@@ -246,6 +251,7 @@ export default function SignUp() {
             </p>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
