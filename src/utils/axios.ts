@@ -37,7 +37,6 @@ apiClient.interceptors.response.use(
 
     // 401 에러이고, 재시도하지 않은 요청인 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log('[Auth] 401 에러 발생, 토큰 리프레시 시도');
       originalRequest._retry = true;
 
       try {
@@ -45,7 +44,6 @@ apiClient.interceptors.response.use(
         const refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
         if (!refreshToken) {
-          console.log('[Auth] refreshToken 없음, 로그인 페이지로 이동');
           // refreshToken이 없으면 로그아웃 처리
           sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
@@ -60,13 +58,11 @@ apiClient.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        console.log('[Auth] refreshToken 발견, 리프레시 API 호출');
         // 토큰 리프레시 요청
         const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
           refreshToken,
         });
 
-        console.log('[Auth] 토큰 리프레시 성공');
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
         // sessionStorage에 새 토큰 저장

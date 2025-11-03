@@ -41,7 +41,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     };
 
     // sessionStorage에 토큰 저장 (보안상 더 안전)
-    console.log('[Auth] 로그인 처리: sessionStorage에 저장');
     sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
     sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     set({ accessToken, refreshToken, user, isAuthenticated: true });
@@ -73,7 +72,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     const refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
     if (accessToken && refreshToken) {
-      console.log('[Auth] sessionStorage에서 토큰 로드 성공');
       try {
         const decoded = jwtDecode<JWTPayload>(accessToken);
         const user: User = {
@@ -82,13 +80,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         };
         set({ accessToken, refreshToken, user, isAuthenticated: true });
       } catch {
-        console.log('[Auth] JWT 디코딩 실패, 토큰 삭제');
         // JWT 디코딩 실패 시 sessionStorage에서 제거
         sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       }
-    } else {
-      console.log('[Auth] sessionStorage에 토큰 없음');
     }
   },
 
