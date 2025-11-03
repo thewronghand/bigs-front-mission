@@ -45,10 +45,16 @@ apiClient.interceptors.response.use(
 
         if (!refreshToken) {
           console.log('[Auth] refreshToken 없음, 로그인 페이지로 이동');
+          console.log('[DEBUG] 3초 후 로그인 페이지로 리다이렉트됩니다...');
           // refreshToken이 없으면 로그아웃 처리
           sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-          window.location.href = '/signin';
+
+          // 디버깅을 위한 지연
+          setTimeout(() => {
+            console.log('[DEBUG] 지금 리다이렉트 실행');
+            window.location.href = '/signin';
+          }, 3000);
           return Promise.reject(error);
         }
 
@@ -76,10 +82,16 @@ apiClient.interceptors.response.use(
             data: refreshError.response.data,
           });
         }
+        console.log('[DEBUG] 3초 후 로그인 페이지로 리다이렉트됩니다...');
         // 리프레시 실패 시 로그아웃 및 로그인 페이지로 이동
         sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-        window.location.href = '/signin';
+
+        // 디버깅을 위한 지연
+        setTimeout(() => {
+          console.log('[DEBUG] 지금 리다이렉트 실행');
+          window.location.href = '/signin';
+        }, 3000);
         return Promise.reject(refreshError);
       }
     }

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MdInbox } from 'react-icons/md';
-import { getPosts } from '../api';
-import { Spinner, Pagination, PostCard, BoardControls } from '../components';
+import toast from 'react-hot-toast';
+import { getPosts, deletePost } from '../api';
+import { Spinner, Pagination, PostCard, BoardControls, ConfirmModal } from '../components';
 import type { PostListResponse } from '../types/post';
 
 export default function Board() {
@@ -11,6 +12,9 @@ export default function Board() {
   const [postData, setPostData] = useState<PostListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // URL에서 페이지, 정렬 순서, 페이지 크기 읽기
   const currentPage = parseInt(searchParams.get('page') || '0', 10);
@@ -38,6 +42,43 @@ export default function Board() {
     navigate(`/boards/${id}`);
   };
 
+  const handleEdit = (id: number) => {
+    navigate(`/boards/${id}/edit`);
+  };
+
+  const handleDelete = (id: number) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteId === null) return;
+
+    try {
+      setDeleting(true);
+      await deletePost(deleteId);
+      setShowDeleteModal(false);
+      setDeleteId(null);
+
+      // 목록 새로고침
+      const data = await getPosts(currentPage, pageSize, sortOrder);
+      setPostData(data);
+
+      // 성공 toast
+      toast.success('게시글이 삭제되었습니다');
+    } catch (err) {
+      console.error('게시글 삭제 실패:', err);
+      toast.error('게시글 삭제에 실패했습니다');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  };
+
   const handlePageChange = (pageNumber: number) => {
     setSearchParams({
       page: pageNumber.toString(),
@@ -48,6 +89,17 @@ export default function Board() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 삭제 확인 모달 */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="게시글 삭제"
+        message="정말 삭제하시겠습니까?&#10;이 작업은 되돌릴 수 없습니다."
+        confirmText="삭제"
+        loading={deleting}
+      />
+
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {error && <p className="text-red-500">{error}</p>}
@@ -110,6 +162,8 @@ export default function Board() {
                         key={post.id}
                         post={post}
                         onClick={handlePostClick}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
                       />
                     ))}
                   </div>

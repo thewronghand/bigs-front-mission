@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { MdDelete } from 'react-icons/md';
+import { IoClose } from 'react-icons/io5';
 import toast from 'react-hot-toast';
-import { createPost, getCategories } from '../api';
+import { createPost, getCategories, getPostDetail, updatePost } from '../api';
 import { ErrorMessage } from '../components/auth';
-import { Button, ExitConfirmModal, DraftsList } from '../components';
+import { Button, ExitConfirmModal, DraftsList, Spinner } from '../components';
 import { useAuthStore } from '../store/authStore';
-import { handlePostFormApiError } from '../utils';
+import { handlePostFormApiError, API_BASE_URL } from '../utils';
 import { useNavigationBlocker } from '../contexts/NavigationBlockerContext';
 import type { PostCategory } from '../types/post';
 
@@ -136,6 +136,8 @@ const resizeImage = (file: File, maxDimension: number): Promise<File> => {
 
 export default function PostForm() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = !!id;
   const logout = useAuthStore((state) => state.logout);
   const { registerBlocker, unregisterBlocker } = useNavigationBlocker();
   const {
@@ -153,8 +155,19 @@ export default function PostForm() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
+  const [existingImageUrl, setExistingImageUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [initialDataLoading, setInitialDataLoading] = useState(isEditMode);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // 수정 모드에서 초기 데이터 저장
+  const [initialData, setInitialData] = useState<{
+    title: string;
+    content: string;
+    category: string;
+    imageUrl: string;
+  } | null>(null);
 
   // 카테고리 목록 (API에서 가져옴)
   const [categories, setCategories] = useState<Record<string, string> | null>(null);
@@ -187,8 +200,49 @@ export default function PostForm() {
     fetchCategories();
   }, []);
 
-  // 페이지 로드 시 임시 저장 목록 불러오기 및 정리
+  // 수정 모드일 때 기존 데이터 fetch
   useEffect(() => {
+    if (!isEditMode || !id) return;
+
+    const fetchPostData = async () => {
+      try {
+        setInitialDataLoading(true);
+        const data = await getPostDetail(Number(id));
+
+        // 폼에 데이터 채우기
+        setValue('title', data.title);
+        setValue('content', data.content);
+        setValue('category', data.boardCategory);
+
+        // 초기 데이터 저장 (변경사항 감지용)
+        setInitialData({
+          title: data.title,
+          content: data.content,
+          category: data.boardCategory,
+          imageUrl: data.imageUrl || '',
+        });
+
+        // 이미지가 있으면 설정
+        if (data.imageUrl) {
+          setExistingImageUrl(data.imageUrl);
+          setPreview(`${API_BASE_URL}${data.imageUrl}`);
+        }
+      } catch (error) {
+        console.error('게시글 조회 실패:', error);
+        toast.error('게시글을 불러오는데 실패했습니다');
+        navigate('/boards');
+      } finally {
+        setInitialDataLoading(false);
+      }
+    };
+
+    fetchPostData();
+  }, [isEditMode, id, navigate, setValue]);
+
+  // 페이지 로드 시 임시 저장 목록 불러오기 및 정리 (작성 모드에서만)
+  useEffect(() => {
+    if (isEditMode) return; // 수정 모드에서는 임시저장 사용 안 함
+
     const savedDrafts = localStorage.getItem('board-drafts');
     if (savedDrafts) {
       let drafts = JSON.parse(savedDrafts);
@@ -200,10 +254,11 @@ export default function PostForm() {
       localStorage.setItem('board-drafts', JSON.stringify(drafts));
       setDrafts(drafts);
     }
-  }, []);
+  }, [isEditMode]);
 
   const title = watch('title', '');
   const content = watch('content', '');
+  const category = watch('category', 'FREE');
 
   // 제목과 내용이 모두 있어야 활성화
   const isFormValid = title.trim().length >= 2 && content.trim().length >= 5;
@@ -227,7 +282,28 @@ export default function PostForm() {
   })();
 
   // 작성 중인 내용이 있는지 확인
-  const hasUnsavedChanges = title.trim().length > 0 || content.trim().length > 0 || selectedFile !== null;
+  const hasUnsavedChanges = (() => {
+    if (isEditMode && initialData) {
+      // 수정 모드: 초기 데이터와 비교
+      const titleChanged = title !== initialData.title;
+      const contentChanged = content !== initialData.content;
+      const categoryChanged = category !== initialData.category;
+
+      // 이미지 변경 감지
+      const imageChanged = (() => {
+        // 새 이미지 선택한 경우
+        if (selectedFile) return true;
+        // 기존 이미지 삭제한 경우
+        if (initialData.imageUrl && !preview) return true;
+        return false;
+      })();
+
+      return titleChanged || contentChanged || categoryChanged || imageChanged;
+    } else {
+      // 작성 모드: 입력값이 있는지만 확인
+      return title.trim().length > 0 || content.trim().length > 0 || selectedFile !== null;
+    }
+  })();
 
   // 페이지 벗어날 때 브라우저 경고 (새로고침, 탭 닫기 등)
   useEffect(() => {
@@ -388,23 +464,28 @@ export default function PostForm() {
 
   const [fileError, setFileError] = useState('');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setFileError('');
+  // 파일 크기 포맷팅 함수
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes}B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+  };
 
-    if (!file) return;
+  // 공통 파일 처리 함수
+  const processFile = async (file: File, clearInput?: () => void) => {
+    setFileError('');
 
     // 1. 파일 크기 제한
     if (file.size > MAX_FILE_SIZE) {
       setFileError('파일 크기는 5MB 이하여야 합니다');
-      e.target.value = '';
+      clearInput?.();
       return;
     }
 
     // 2. MIME 타입 확인
     if (!file.type.startsWith('image/')) {
       setFileError('이미지 파일만 업로드 가능합니다');
-      e.target.value = '';
+      clearInput?.();
       return;
     }
 
@@ -413,7 +494,7 @@ export default function PostForm() {
     const extension = fileName.split('.').pop() || '';
     if (!ALLOWED_IMAGE_EXTENSIONS.includes(extension)) {
       setFileError(`허용된 이미지 형식: ${ALLOWED_IMAGE_EXTENSIONS.join(', ')}`);
-      e.target.value = '';
+      clearInput?.();
       return;
     }
 
@@ -426,7 +507,7 @@ export default function PostForm() {
 
       if (img.width > MAX_IMAGE_DIMENSION || img.height > MAX_IMAGE_DIMENSION) {
         setFileError(`이미지 크기는 ${MAX_IMAGE_DIMENSION}x${MAX_IMAGE_DIMENSION} 이하여야 합니다`);
-        e.target.value = '';
+        clearInput?.();
         return;
       }
 
@@ -437,7 +518,7 @@ export default function PostForm() {
         // 리사이징 후 파일 크기 재확인
         if (resizedFile.size > MAX_FILE_SIZE) {
           setFileError('리사이징 후에도 파일 크기가 5MB를 초과합니다');
-          e.target.value = '';
+          clearInput?.();
           return;
         }
 
@@ -451,17 +532,58 @@ export default function PostForm() {
       } catch (error) {
         console.error('이미지 리사이징 실패:', error);
         setFileError('이미지 처리 중 오류가 발생했습니다');
-        e.target.value = '';
+        clearInput?.();
       }
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
       setFileError('유효하지 않은 이미지 파일입니다');
-      e.target.value = '';
+      clearInput?.();
     };
 
     img.src = objectUrl;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file, () => {
+      e.target.value = '';
+    });
+  };
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleRemoveImage = () => {
@@ -508,21 +630,41 @@ export default function PostForm() {
     }
 
     try {
-      console.log('게시글 작성 요청:', data);
-      console.log('첨부 파일:', selectedFile);
+      if (isEditMode && id) {
+        // 수정 모드
+        console.log('게시글 수정 요청:', data);
+        console.log('첨부 파일:', selectedFile);
 
-      const response = await createPost(data, selectedFile || undefined);
+        await updatePost(Number(id), data, selectedFile || undefined);
 
-      console.log('작성 완료! 게시글 ID:', response.id);
+        console.log('수정 완료! 게시글 ID:', id);
 
-      // 제출 완료 표시 (나가기 경고 비활성화)
-      setIsSubmitted(true);
+        // 제출 완료 표시 (나가기 경고 비활성화)
+        setIsSubmitted(true);
 
-      // 성공 toast
-      toast.success('게시글이 작성되었습니다!');
+        // 성공 toast
+        toast.success('게시글이 수정되었습니다!');
 
-      // 목록으로 이동 (toast 표시 후)
-      setTimeout(() => navigate('/boards'), 500);
+        // 상세 페이지로 이동 (toast 표시 후)
+        setTimeout(() => navigate(`/boards/${id}`), 500);
+      } else {
+        // 작성 모드
+        console.log('게시글 작성 요청:', data);
+        console.log('첨부 파일:', selectedFile);
+
+        const response = await createPost(data, selectedFile || undefined);
+
+        console.log('작성 완료! 게시글 ID:', response.id);
+
+        // 제출 완료 표시 (나가기 경고 비활성화)
+        setIsSubmitted(true);
+
+        // 성공 toast
+        toast.success('게시글이 작성되었습니다!');
+
+        // 목록으로 이동 (toast 표시 후)
+        setTimeout(() => navigate('/boards'), 500);
+      }
     } catch (error) {
       handlePostFormApiError(error, { logout, navigate, setApiError });
     }
@@ -532,16 +674,28 @@ export default function PostForm() {
     <div className="min-h-screen bg-gray-50">
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* 임시 저장된 글 목록 */}
-        <DraftsList
-          drafts={drafts}
-          isExpanded={isDraftsExpanded}
-          onToggle={() => setIsDraftsExpanded(!isDraftsExpanded)}
-          onLoadDraft={handleLoadDraft}
-          onDeleteDraft={handleDeleteDraft}
-        />
+        {/* 초기 데이터 로딩 중 (수정 모드) */}
+        {initialDataLoading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Spinner size="lg" />
+            <p className="text-gray-500 mt-6">게시글 정보를 불러오는 중...</p>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow">
+        {!initialDataLoading && (
+          <>
+            {/* 임시 저장된 글 목록 (작성 모드에서만) */}
+            {!isEditMode && (
+              <DraftsList
+                drafts={drafts}
+                isExpanded={isDraftsExpanded}
+                onToggle={() => setIsDraftsExpanded(!isDraftsExpanded)}
+                onLoadDraft={handleLoadDraft}
+                onDeleteDraft={handleDeleteDraft}
+              />
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow">
           {/* 카테고리 */}
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
@@ -606,27 +760,30 @@ export default function PostForm() {
                 <label htmlFor="content" className="block text-sm font-medium text-gray-700">
                   내용
                 </label>
-                <div className="relative group">
-                  <Button
-                    type="button"
-                    onClick={handleManualSave}
-                    disabled={!canSaveDraft}
-                    variant="secondary"
-                    size="xs"
-                  >
-                    임시저장
-                  </Button>
-                  {!canSaveDraft && (
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                      <div className="relative bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">
-                        {/* 위쪽 화살표 */}
-                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                        {/* 메시지 */}
-                        <span className="relative z-10">{getSaveDisabledReason()}</span>
+                {/* 임시저장 버튼 (작성 모드에서만) */}
+                {!isEditMode && (
+                  <div className="relative group">
+                    <Button
+                      type="button"
+                      onClick={handleManualSave}
+                      disabled={!canSaveDraft}
+                      variant="secondary"
+                      size="xs"
+                    >
+                      임시저장
+                    </Button>
+                    {!canSaveDraft && (
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                        <div className="relative bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">
+                          {/* 위쪽 화살표 */}
+                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                          {/* 메시지 */}
+                          <span className="relative z-10">{getSaveDisabledReason()}</span>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
               <span className={`text-sm ${content.length > MAX_CONTENT_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
                 {content.length}/{MAX_CONTENT_LENGTH}
@@ -648,38 +805,94 @@ export default function PostForm() {
             )}
           </div>
 
-          {/* 파일 첨부 */}
+          {/* 이미지 첨부 */}
           <div>
-            <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
-              이미지 첨부 (선택, 최대 5MB)
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              이미지 첨부 (선택)
             </label>
+
+            {/* Hidden file input */}
             <input
               type="file"
               id="file"
               accept="image/*"
               onChange={handleFileChange}
               ref={fileInputRef}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="hidden"
             />
-            {fileError && (
-              <p className="text-sm text-red-500 mt-1">{fileError}</p>
-            )}
-            {preview && (
-              <div
-                className="mt-4 relative group inline-block cursor-pointer overflow-hidden rounded-lg"
-                onClick={handleRemoveImage}
-              >
-                <img
-                  src={preview}
-                  alt="미리보기"
-                  className="max-w-full shadow transition-all duration-200 group-hover:blur-sm"
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="bg-gray-500/80 rounded-full p-3">
-                    <MdDelete className="text-white text-4xl" />
+
+            {/* 카드 스타일 업로드 영역 */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+              {!preview ? (
+                // 업로드 전
+                <div
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onClick={handleUploadClick}
+                  className={`cursor-pointer h-64 flex items-center justify-center ${
+                    isDragging
+                      ? 'bg-blue-50'
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400 mb-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-gray-600 mb-1">
+                      {isDragging ? '이미지를 놓아주세요' : '이미지를 드래그하거나 클릭하여 업로드'}
+                    </p>
+                    <p className="text-xs text-gray-500">최대 5MB, JPG/PNG/GIF/WEBP</p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                // 업로드 후
+                <div className="relative bg-white">
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 hover:scale-110 shadow-lg cursor-pointer transition-transform"
+                    aria-label="이미지 삭제"
+                  >
+                    <IoClose className="text-xl" />
+                  </button>
+                  {/* 고정 높이 이미지 영역 */}
+                  <div className="h-64 flex items-center justify-center bg-gray-100">
+                    <img
+                      src={preview}
+                      alt="업로드된 이미지"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                  {/* 파일 정보 */}
+                  {selectedFile && (
+                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                      <p className="text-sm text-gray-700 font-medium truncate">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatFileSize(selectedFile.size)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {fileError && (
+              <p className="text-sm text-red-500 mt-2">{fileError}</p>
             )}
           </div>
 
@@ -699,25 +912,34 @@ export default function PostForm() {
             </Button>
             <Button
               type="submit"
-              disabled={!isFormValid || isSubmitting}
+              disabled={!isFormValid || isSubmitting || (isEditMode && !hasUnsavedChanges)}
               variant="primary"
               size="lg"
               fullWidth
             >
-              {isSubmitting ? '작성 중...' : '작성하기'}
+              {isSubmitting
+                ? isEditMode
+                  ? '수정 중...'
+                  : '작성 중...'
+                : isEditMode
+                  ? '수정하기'
+                  : '작성하기'}
             </Button>
           </div>
         </form>
+          </>
+        )}
       </div>
 
       {/* 나가기 확인 모달 */}
       <ExitConfirmModal
         isOpen={showExitModal}
-        onSaveAndExit={handleSaveAndExit}
+        onSaveAndExit={!isEditMode ? handleSaveAndExit : undefined}
         onExitWithoutSaving={handleExitWithoutSaving}
         onCancel={handleCancelExit}
-        canSave={canSaveDraft}
-        saveDisabledReason={getSaveDisabledReason()}
+        canSave={!isEditMode ? canSaveDraft : undefined}
+        saveDisabledReason={!isEditMode ? getSaveDisabledReason() : undefined}
+        isEditMode={isEditMode}
       />
     </div>
   );
