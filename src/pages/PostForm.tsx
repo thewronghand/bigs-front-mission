@@ -25,7 +25,7 @@ interface PostDraft {
 }
 
 // 보안 상수
-const MAX_TITLE_LENGTH = 100;
+const MAX_TITLE_LENGTH = 30;
 const MAX_CONTENT_LENGTH = 5000;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGE_DIMENSION = 4096; // 최대 4096x4096 (검증용)
