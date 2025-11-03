@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { signIn } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { isValidEmail } from '../utils/validation';
+import { extractAuthErrorMessage } from '../utils/errorHandlers';
 import { FormInput, ErrorMessage, BrandingSection } from '../components/auth';
 import { Button } from '../components';
 import type { SignInRequest } from '../types/auth';
@@ -44,17 +45,7 @@ export default function SignIn() {
       // 게시판 페이지로 이동
       navigate('/boards');
     } catch (error) {
-      const typedError = error as {
-        response?: {
-          data?: {
-            message?: string;
-          };
-        };
-      };
-
-      const errorMessage =
-        typedError.response?.data?.message || '로그인에 실패했습니다';
-
+      const errorMessage = extractAuthErrorMessage(error, '로그인에 실패했습니다');
       setApiError(errorMessage);
     }
   };

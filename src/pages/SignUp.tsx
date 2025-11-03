@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
 import { signUp } from '../api';
 import { isValidEmail, isValidPassword, getPasswordErrorMessage, getPasswordMismatchMessage } from '../utils/validation';
+import { extractAuthErrorMessage } from '../utils/errorHandlers';
 import { FormInput, PasswordRequirements, SuccessOverlay, ErrorMessage, BrandingSection } from '../components/auth';
 import { Button } from '../components';
 import type { SignUpRequest } from '../types/auth';
@@ -68,38 +69,7 @@ export default function SignUp() {
         navigate('/signin');
       }, 1500);
     } catch (error) {
-      const typedError = error as {
-        response?: {
-          data?: {
-            message?: string;
-            username?: string[];
-            password?: string[];
-            name?: string[];
-          }
-        }
-      };
-
-      const responseData = typedError.response?.data;
-      let errorMessage = '회원가입에 실패했습니다';
-
-      // 서버에서 보낸 메시지가 있는 경우
-      if (responseData?.message) {
-        errorMessage = responseData.message;
-      }
-
-      // 필드별 에러 메시지가 있는 경우 (배열 형태)
-      if (responseData?.username && responseData.username.length > 0) {
-        errorMessage = responseData.username[0];
-      }
-
-      if (responseData?.password && responseData.password.length > 0) {
-        errorMessage = responseData.password[0];
-      }
-
-      if (responseData?.name && responseData.name.length > 0) {
-        errorMessage = responseData.name[0];
-      }
-
+      const errorMessage = extractAuthErrorMessage(error, '회원가입에 실패했습니다');
       setApiError(errorMessage);
     }
   };
@@ -150,6 +120,7 @@ export default function SignUp() {
             error={errors.name?.message}
             registration={register('name', {
               required: '이름을 입력해주세요',
+              maxLength: { value: 8, message: '이름은 8자 이하여야 합니다' },
             })}
           />
 

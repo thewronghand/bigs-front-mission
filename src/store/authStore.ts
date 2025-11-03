@@ -58,9 +58,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    // localStorage와 sessionStorage 모두에서 제거
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    // sessionStorage에서 토큰 제거
     sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
