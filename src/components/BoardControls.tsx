@@ -58,14 +58,14 @@ export default function BoardControls({
   };
 
   return (
-    <div className="mb-4 flex flex-wrap justify-end items-center gap-2">
+    <div className="mb-3 xs:mb-4 flex flex-wrap justify-end items-center gap-1.5 xs:gap-2">
       <div className="flex items-center gap-1">
         <input
           type="text"
           value={pageInput}
           onChange={handlePageInputChange}
-          placeholder="페이지 번호"
-          className="w-24 px-3 py-2 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="페이지"
+          className="w-16 xs:w-20 sm:w-24 px-2 xs:px-3 py-1.5 xs:py-2 border border-gray-300 rounded text-xs xs:text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && isPageInputValid()) {
               handleGoToPage();
@@ -84,16 +84,16 @@ export default function BoardControls({
       <select
         value={pageSize}
         onChange={handlePageSizeChange}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="px-2 xs:px-3 py-1.5 xs:py-2 border border-gray-300 rounded-lg text-xs xs:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <option value="10">10개씩</option>
-        <option value="15">15개씩</option>
-        <option value="20">20개씩</option>
+        <option value="12">12개</option>
+        <option value="18">18개</option>
+        <option value="24">24개</option>
       </select>
       <select
         value={sortOrder}
         onChange={handleSortOrderChange}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="px-2 xs:px-3 py-1.5 xs:py-2 border border-gray-300 rounded-lg text-xs xs:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="desc">최신순</option>
         <option value="asc">오래된순</option>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MdInbox } from 'react-icons/md';
+import { MdInbox, MdAdd } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import { getPosts, deletePost } from '../api';
 import { Spinner, Pagination, PostCard, BoardControls, ConfirmModal } from '../components';
@@ -19,7 +19,7 @@ export default function Board() {
   // URL에서 페이지, 정렬 순서, 페이지 크기 읽기
   const currentPage = parseInt(searchParams.get('page') || '0', 10);
   const sortOrder = (searchParams.get('sort') || 'desc') as 'desc' | 'asc';
-  const pageSize = parseInt(searchParams.get('size') || '10', 10);
+  const pageSize = parseInt(searchParams.get('size') || '12', 10);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -101,14 +101,14 @@ export default function Board() {
       />
 
       {/* 본문 */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {error && <p className="text-red-500">{error}</p>}
+      <div className="max-w-4xl mx-auto px-3 xs:px-4 py-4 xs:py-6 sm:py-8">
+        {error && <p className="text-red-500 text-sm xs:text-base">{error}</p>}
 
         {/* 초기 로딩 */}
         {!postData && loading && (
-          <div className="flex flex-col items-center justify-center py-12 animate-fadeIn">
+          <div className="flex flex-col items-center justify-center py-8 xs:py-12 animate-fadeIn">
             <Spinner size="lg" />
-            <p className="text-gray-500 mt-6">로딩 중...</p>
+            <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">로딩 중...</p>
           </div>
         )}
 
@@ -116,7 +116,7 @@ export default function Board() {
           <div className="animate-fadeIn">
             {/* 총 개수/페이지 수 */}
             <div className="mb-2">
-              <p className="text-sm text-gray-600">
+              <p className="text-xs xs:text-sm text-gray-600">
                 총 {postData.totalElements}개 / {postData.totalPages}페이지
               </p>
             </div>
@@ -141,9 +141,9 @@ export default function Board() {
 
             {/* 로딩 UI */}
             {loading && (
-              <div className="flex flex-col items-center justify-center py-12 animate-fadeIn">
+              <div className="flex flex-col items-center justify-center py-8 xs:py-12 animate-fadeIn">
                 <Spinner size="lg" />
-                <p className="text-gray-500 mt-6">로딩 중...</p>
+                <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">로딩 중...</p>
               </div>
             )}
 
@@ -151,12 +151,12 @@ export default function Board() {
             {!loading && (
               <>
                 {postData.content.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 animate-fadeIn">
+                  <div className="flex flex-col items-center justify-center py-12 xs:py-16 sm:py-20 animate-fadeIn">
                     <MdInbox size={64} className="text-gray-300 mb-4" />
-                    <p className="text-gray-500 text-lg">아직 게시글이 없습니다</p>
+                    <p className="text-gray-500 text-base xs:text-lg">아직 게시글이 없습니다</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 animate-fadeIn">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 xs:gap-3 sm:gap-4 animate-fadeIn">
                     {postData.content.map((post) => (
                       <PostCard
                         key={post.id}
@@ -184,6 +184,15 @@ export default function Board() {
           </div>
         )}
       </div>
+
+      {/* FAB 버튼 (모바일 전용) - 글쓰기 */}
+      <button
+        onClick={() => navigate('/boards/new')}
+        className="sm:hidden fixed bottom-20 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-blue-700 active:bg-blue-800 transition-colors cursor-pointer"
+        aria-label="글쓰기"
+      >
+        <MdAdd size={28} />
+      </button>
     </div>
   );
 }
