@@ -1,16 +1,20 @@
-import { useParams } from 'react-router-dom';
-import { getPostDetail } from '../api';
+import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { getPostDetail, deletePost } from '../api';
 import { useEffect, useState } from 'react';
 import type { Post } from '../types/post';
 import { API_BASE_URL, formatDate } from '../utils';
-import { Button, Spinner } from '../components';
+import { Button, Spinner, ConfirmModal } from '../components';
 
 export default function PostDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [postDetailData, setPostDetailData] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [imageLoading, setImageLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchPostDetail = async () => {
@@ -28,8 +32,53 @@ export default function PostDetail() {
 
     fetchPostDetail();
   }, [id]);
+
+  const handleEdit = () => {
+    navigate(`/boards/${id}/edit`);
+  };
+
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!id) return;
+
+    try {
+      setDeleting(true);
+      await deletePost(Number(id));
+      setShowDeleteModal(false);
+
+      // 성공 toast
+      toast.success('게시글이 삭제되었습니다');
+
+      // 목록으로 이동 (toast 표시 후)
+      setTimeout(() => navigate('/boards'), 500);
+    } catch (err) {
+      console.error('게시글 삭제 실패:', err);
+      toast.error('게시글 삭제에 실패했습니다');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 삭제 확인 모달 */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="게시글 삭제"
+        message="정말 삭제하시겠습니까?&#10;이 작업은 되돌릴 수 없습니다."
+        confirmText="삭제"
+        loading={deleting}
+      />
+
       {/* 본문 */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {error && (
@@ -65,10 +114,10 @@ export default function PostDetail() {
               </h2>
 
               <div className="mb-4 flex gap-1.5 justify-end">
-                <Button variant="secondary" size="xs">
+                <Button variant="secondary" size="xs" onClick={handleEdit}>
                   수정
                 </Button>
-                <Button variant="danger" size="xs">
+                <Button variant="danger" size="xs" onClick={handleDelete}>
                   삭제
                 </Button>
               </div>
