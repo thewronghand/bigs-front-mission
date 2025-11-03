@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* 커스텀 브레이크포인트 */
+@theme {
+  --breakpoint-xs: 400px;
+}
+
 /* 스크롤바 항상 표시 (너비 변화 방지) */
 html {
   overflow-y: scroll;
