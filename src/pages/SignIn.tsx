@@ -22,7 +22,6 @@ export default function SignIn() {
   });
 
   const [apiError, setApiError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
 
   const username = watch('username', '');
   const password = watch('password', '');
@@ -34,12 +33,18 @@ export default function SignIn() {
   const onSubmit = async (data: SignInRequest) => {
     setApiError('');
 
+    // TODO: 테스트용 로그 - 프로덕션 배포 전 반드시 제거!
+    console.log('[TEST] 로그인 시도:', {
+      username: data.username,
+      password: data.password,
+    });
+
     try {
       // 로그인 API 호출
       const response = await signIn(data);
 
-      // Zustand 스토어에 토큰 저장 (JWT 디코딩 포함)
-      login(response.accessToken, response.refreshToken, rememberMe);
+      // Zustand 스토어에 토큰 저장 (JWT 디코딩 포함, sessionStorage 사용)
+      login(response.accessToken, response.refreshToken);
 
       // 게시판 페이지로 이동
       navigate('/boards');
@@ -53,6 +58,15 @@ export default function SignIn() {
       };
 
       const errorMessage = typedError.response?.data?.message || '로그인에 실패했습니다';
+
+      // TODO: 테스트용 로그 - 프로덕션 배포 전 반드시 제거!
+      console.error('[TEST] 로그인 실패:', {
+        username: data.username,
+        password: data.password,
+        error: errorMessage,
+        fullError: typedError.response?.data,
+      });
+
       setApiError(errorMessage);
     }
   };
@@ -96,34 +110,6 @@ export default function SignIn() {
             <p className="text-xs text-gray-500 mt-1">
               8자 이상, 숫자/영문/특수문자(!%*#?&) 포함
             </p>
-          </div>
-
-          {/* 로그인 상태 유지 체크박스 */}
-          <div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
-                로그인 상태 유지
-              </label>
-            </div>
-            {/* 체크 시 안내 메시지 */}
-            <div
-              className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                rememberMe ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0'
-              }`}
-            >
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-blue-800">
-                  🔒 안전을 위해 개인 기기에서만 사용해주세요
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* API 에러 메시지 */}
