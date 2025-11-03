@@ -25,16 +25,14 @@ export const resizeImage = (file: File, maxDimension: number): Promise<File> => 
       let newWidth = width;
       let newHeight = height;
 
-      if (width > height) {
-        if (width > maxDimension) {
-          newWidth = maxDimension;
-          newHeight = (height * maxDimension) / width;
-        }
-      } else {
-        if (height > maxDimension) {
-          newHeight = maxDimension;
-          newWidth = (width * maxDimension) / height;
-        }
+      if (width > height && width > maxDimension) {
+        newWidth = maxDimension;
+        newHeight = (height * maxDimension) / width;
+      }
+
+      if (height >= width && height > maxDimension) {
+        newHeight = maxDimension;
+        newWidth = (width * maxDimension) / height;
       }
 
       // Canvas로 리사이징
@@ -85,4 +83,34 @@ export const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes}B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+};
+
+/**
+ * 1x1 투명 PNG 이미지를 비동기로 생성합니다.
+ * 서버에서 이미지 삭제를 위해 사용됩니다.
+ */
+export const createTransparentImageAsync = async (): Promise<File> => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Canvas context를 생성할 수 없습니다');
+  }
+
+  // 투명한 픽셀 (clearRect로 투명하게)
+  ctx.clearRect(0, 0, 1, 1);
+
+  return new Promise<File>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('투명 이미지 생성 실패'));
+        return;
+      }
+
+      const file = new File([blob], 'transparent.png', { type: 'image/png' });
+      resolve(file);
+    }, 'image/png');
+  });
 };

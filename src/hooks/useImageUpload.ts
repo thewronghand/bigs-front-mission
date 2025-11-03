@@ -12,11 +12,13 @@ export const useImageUpload = () => {
   const [preview, setPreview] = useState<string>('');
   const [fileError, setFileError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [hasDeletedImage, setHasDeletedImage] = useState(false); // 기존 이미지 삭제 추적
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 공통 파일 처리 함수
   const processFile = async (file: File, clearInput?: () => void) => {
     setFileError('');
+    setHasDeletedImage(false); // 새 파일 선택 시 삭제 플래그 리셋
 
     // 1. 원본 파일 크기 제한 (메모리 보호용)
     if (file.size > MAX_ORIGINAL_FILE_SIZE) {
@@ -42,55 +44,56 @@ export const useImageUpload = () => {
     }
 
     // 4. 파일 크기에 따라 처리 분기
+    // 이미 1MB 이하면 리사이징 없이 바로 사용
     if (file.size <= MAX_FILE_SIZE) {
-      // 이미 1MB 이하면 리사이징 없이 바로 사용
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-    } else {
-      // 1MB 초과하면 리사이징 시도
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-
-      img.onload = async () => {
-        URL.revokeObjectURL(objectUrl);
-
-        try {
-          // 이미지 리사이징 (1920px 기준)
-          const resizedFile = await resizeImage(file, RESIZE_DIMENSION);
-
-          // 리사이징 후 파일 크기 재확인
-          if (resizedFile.size > MAX_FILE_SIZE) {
-            setFileError('리사이징 후에도 파일 크기가 1MB를 초과합니다');
-            clearInput?.();
-            return;
-          }
-
-          // 모든 검증 통과 - 파일 설정 및 미리보기
-          setSelectedFile(resizedFile);
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setPreview(reader.result as string);
-          };
-          reader.readAsDataURL(resizedFile);
-        } catch (error) {
-          console.error('이미지 리사이징 실패:', error);
-          setFileError('이미지 처리 중 오류가 발생했습니다');
-          clearInput?.();
-        }
-      };
-
-      img.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        setFileError('유효하지 않은 이미지 파일입니다');
-        clearInput?.();
-      };
-
-      img.src = objectUrl;
+      return;
     }
+
+    // 1MB 초과하면 리사이징 시도
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      URL.revokeObjectURL(objectUrl);
+
+      try {
+        // 이미지 리사이징 (1920px 기준)
+        const resizedFile = await resizeImage(file, RESIZE_DIMENSION);
+
+        // 리사이징 후 파일 크기 재확인
+        if (resizedFile.size > MAX_FILE_SIZE) {
+          setFileError('리사이징 후에도 파일 크기가 1MB를 초과합니다');
+          clearInput?.();
+          return;
+        }
+
+        // 모든 검증 통과 - 파일 설정 및 미리보기
+        setSelectedFile(resizedFile);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreview(reader.result as string);
+        };
+        reader.readAsDataURL(resizedFile);
+      } catch (error) {
+        console.error('이미지 리사이징 실패:', error);
+        setFileError('이미지 처리 중 오류가 발생했습니다');
+        clearInput?.();
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setFileError('유효하지 않은 이미지 파일입니다');
+      clearInput?.();
+    };
+
+    img.src = objectUrl;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,6 +138,11 @@ export const useImageUpload = () => {
   };
 
   const handleRemoveImage = () => {
+    // 기존 이미지(서버 URL)를 삭제하는 경우 추적
+    if (preview && (preview.startsWith('http') || preview.includes('/media/'))) {
+      setHasDeletedImage(true);
+    }
+
     setSelectedFile(null);
     setPreview('');
     setFileError('');
@@ -149,6 +157,7 @@ export const useImageUpload = () => {
     setPreview,
     fileError,
     isDragging,
+    hasDeletedImage,
     fileInputRef,
     handleFileChange,
     handleDragEnter,

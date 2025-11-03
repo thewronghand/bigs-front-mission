@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import type { UseFormSetValue } from 'react-hook-form';
 import { createPost, getCategories, getPostDetail, updatePost } from '../api';
 import { handlePostFormApiError, API_BASE_URL } from '../utils';
-import { MAX_FILE_SIZE, ALLOWED_IMAGE_EXTENSIONS } from '../utils/imageUtils';
+import { MAX_FILE_SIZE, ALLOWED_IMAGE_EXTENSIONS, createTransparentImageAsync } from '../utils/imageUtils';
 import type { PostCategory } from '../types/post';
 
 interface PostFormData {
@@ -19,6 +19,7 @@ interface UsePostFormDataProps {
   setValue: UseFormSetValue<PostFormData>;
   setPreview: (preview: string) => void;
   selectedFile: File | null;
+  hasDeletedImage: boolean;
   setIsSubmitted: (submitted: boolean) => void;
   maxTitleLength: number;
   maxContentLength: number;
@@ -30,6 +31,7 @@ export const usePostFormData = ({
   setValue,
   setPreview,
   selectedFile,
+  hasDeletedImage,
   setIsSubmitted,
   maxTitleLength,
   maxContentLength,
@@ -91,9 +93,19 @@ export const usePostFormData = ({
           imageUrl: data.imageUrl || '',
         });
 
-        // 이미지가 있으면 설정
+        // 이미지가 있으면 설정 (단, 1x1 투명 이미지는 제외)
         if (data.imageUrl) {
-          setPreview(`${API_BASE_URL}${data.imageUrl}`);
+          const img = new Image();
+          img.onload = () => {
+            // 1x1 투명 이미지 감지 (삭제된 이미지로 간주)
+            if (img.naturalWidth === 1 && img.naturalHeight === 1) {
+              return;
+            }
+
+            // 정상 이미지만 미리보기 표시
+            setPreview(`${API_BASE_URL}${data.imageUrl}`);
+          };
+          img.src = `${API_BASE_URL}${data.imageUrl}`;
         }
       } catch (error) {
         console.error('게시글 조회 실패:', error);
@@ -142,7 +154,14 @@ export const usePostFormData = ({
     try {
       if (isEditMode && id) {
         // 수정 모드
-        await updatePost(Number(id), data, selectedFile || undefined);
+        let fileToSend: File | undefined = selectedFile || undefined;
+
+        // 이미지 삭제 시 1x1 투명 PNG 전송
+        if (hasDeletedImage && !selectedFile) {
+          fileToSend = await createTransparentImageAsync();
+        }
+
+        await updatePost(Number(id), data, fileToSend);
 
         // 제출 완료 표시 (나가기 경고 비활성화)
         setIsSubmitted(true);
@@ -152,19 +171,20 @@ export const usePostFormData = ({
 
         // 상세 페이지로 이동 (toast 표시 후)
         setTimeout(() => navigate(`/boards/${id}`), 500);
-      } else {
-        // 작성 모드
-        await createPost(data, selectedFile || undefined);
-
-        // 제출 완료 표시 (나가기 경고 비활성화)
-        setIsSubmitted(true);
-
-        // 성공 toast
-        toast.success('게시글이 작성되었습니다!');
-
-        // 목록으로 이동 (toast 표시 후)
-        setTimeout(() => navigate('/boards'), 500);
+        return;
       }
+
+      // 작성 모드
+      await createPost(data, selectedFile || undefined);
+
+      // 제출 완료 표시 (나가기 경고 비활성화)
+      setIsSubmitted(true);
+
+      // 성공 toast
+      toast.success('게시글이 작성되었습니다!');
+
+      // 목록으로 이동 (toast 표시 후)
+      setTimeout(() => navigate('/boards'), 500);
     } catch (error) {
       handlePostFormApiError(error, { setApiError });
     }

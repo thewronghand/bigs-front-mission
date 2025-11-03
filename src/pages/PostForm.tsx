@@ -53,6 +53,7 @@ export default function PostForm() {
     setValue,
     setPreview: imageUpload.setPreview,
     selectedFile: imageUpload.selectedFile,
+    hasDeletedImage: imageUpload.hasDeletedImage,
     setIsSubmitted,
     maxTitleLength: MAX_TITLE_LENGTH,
     maxContentLength: MAX_CONTENT_LENGTH,
