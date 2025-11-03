@@ -27,9 +27,13 @@ export const handlePostFormApiError = (
   switch (status) {
     case 401:
       // 인증 만료 - Toast + 로그아웃 + 로그인 페이지 이동
+      console.log('[DEBUG] 401 에러 - 3초 후 로그인 페이지로 이동');
       toast.error('로그인이 만료되었습니다. 다시 로그인해주세요.');
       logout();
-      setTimeout(() => navigate('/signin'), 1000);
+      setTimeout(() => {
+        console.log('[DEBUG] 지금 리다이렉트 실행');
+        navigate('/signin');
+      }, 3000);
       break;
 
     case 403:
