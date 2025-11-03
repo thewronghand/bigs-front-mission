@@ -34,12 +34,6 @@ export default function SignIn() {
   const onSubmit = async (data: SignInRequest) => {
     setApiError('');
 
-    // TODO: 테스트용 로그 - 프로덕션 배포 전 반드시 제거!
-    console.log('[TEST] 로그인 시도:', {
-      username: data.username,
-      password: data.password,
-    });
-
     try {
       // 로그인 API 호출
       const response = await signIn(data);
@@ -60,14 +54,6 @@ export default function SignIn() {
 
       const errorMessage =
         typedError.response?.data?.message || '로그인에 실패했습니다';
-
-      // TODO: 테스트용 로그 - 프로덕션 배포 전 반드시 제거!
-      console.error('[TEST] 로그인 실패:', {
-        username: data.username,
-        password: data.password,
-        error: errorMessage,
-        fullError: typedError.response?.data,
-      });
 
       setApiError(errorMessage);
     }
