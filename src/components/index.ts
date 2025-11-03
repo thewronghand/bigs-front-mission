@@ -2,3 +2,5 @@
 export * from './common';
 export * from './post';
 // export * from './auth';
+export { default as Pagination } from './Pagination';
+export { default as BoardControls } from './BoardControls';
