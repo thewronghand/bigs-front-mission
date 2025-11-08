@@ -51,9 +51,9 @@ apiClient.interceptors.response.use(
           // 세션 만료 오버레이 표시
           useAuthStore.getState().setSessionExpired(true);
 
-          // 2초 후 로그인 페이지로 이동
+          // 2초 후 로그인 페이지로 이동 (절대 경로 사용)
           setTimeout(() => {
-            window.location.href = '/signin';
+            window.location.replace('/signin');
           }, 2000);
           return Promise.reject(error);
         }
@@ -87,9 +87,9 @@ apiClient.interceptors.response.use(
         // 세션 만료 오버레이 표시
         useAuthStore.getState().setSessionExpired(true);
 
-        // 2초 후 로그인 페이지로 이동
+        // 2초 후 로그인 페이지로 이동 (절대 경로 사용)
         setTimeout(() => {
-          window.location.href = '/signin';
+          window.location.replace('/signin');
         }, 2000);
         return Promise.reject(refreshError);
       }
