@@ -28,13 +28,6 @@ export default function SignUp() {
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
   const password = watch('password', '');
-  const username = watch('username', '');
-  const name = watch('name', '');
-  const confirmPassword = watch('confirmPassword', '');
-
-  // 모든 필드가 입력되었는지 확인
-  const allFieldsFilled = username && name && password && confirmPassword;
-  const isFormValid = allFieldsFilled && isValid;
 
   // 비밀번호 입력 후 0.3초 대기 후 요구사항 표시
   useEffect(() => {
@@ -204,7 +197,7 @@ export default function SignUp() {
           {/* 제출 버튼 */}
           <Button
             type="submit"
-            disabled={!isFormValid || isSubmitting}
+            disabled={!isValid || isSubmitting}
             variant="primary"
             size="lg"
             className="w-full font-medium"
