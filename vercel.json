@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://front-mission.bigs.or.kr/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
