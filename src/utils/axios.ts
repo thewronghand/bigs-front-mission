@@ -13,7 +13,6 @@ export const apiClient = axios.create({
 // Request 인터셉터: accessToken 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    // sessionStorage에서 accessToken 가져오기
     const accessToken = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
     if (accessToken) {
@@ -35,62 +34,114 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // 🔍 디버깅 로그 1: 모든 에러 감지
+    console.log('🔴 [API Error]', {
+      status: error.response?.status,
+      url: originalRequest?.url,
+      method: originalRequest?.method,
+      timestamp: new Date().toISOString(),
+    });
+
     // 401 에러이고, 재시도하지 않은 요청인 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log('🔑 [401 Detected] Starting token refresh process');
       originalRequest._retry = true;
 
       try {
-        // sessionStorage에서 refreshToken 가져오기
         const refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
+        // 🔍 디버깅 로그 2: refreshToken 존재 여부
+        console.log('🔑 [RefreshToken Check]', {
+          hasRefreshToken: !!refreshToken,
+          refreshTokenLength: refreshToken?.length || 0,
+        });
+
         if (!refreshToken) {
-          // refreshToken이 없으면 로그아웃 처리
+          // 🔍 디버깅 로그 3: refreshToken 없음 - 로그아웃 진행
+          console.log('❌ [No RefreshToken] Starting logout process');
+
           sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
 
-          // 세션 만료 오버레이 표시
           useAuthStore.getState().setSessionExpired(true);
+          console.log('✅ [Overlay] SessionExpired overlay shown');
 
-          // 2초 후 로그인 페이지로 이동
+          // 🔍 디버깅 로그 4: 리다이렉트 예약
+          console.log('⏰ [Redirect Scheduled] Will redirect to /signin in 2 seconds');
+
           setTimeout(() => {
-            window.location.href = '/signin';
+            // 🔍 디버깅 로그 5: 실제 리다이렉트 실행
+            console.log('🚀 [Redirecting NOW]', {
+              from: window.location.href,
+              to: '/signin',
+              method: 'window.location.replace',
+            });
+
+            try {
+              window.location.replace('/signin');
+              console.log('✅ [Redirect Called] window.location.replace executed');
+            } catch (redirectError) {
+              console.error('❌ [Redirect Error]', redirectError);
+            }
           }, 2000);
+
           return Promise.reject(error);
         }
 
-        // 토큰 리프레시 요청
+        // 🔍 디버깅 로그 6: 토큰 리프레시 시도
+        console.log('🔄 [Refresh API] Calling refresh endpoint');
+
         const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
           refreshToken,
         });
 
+        // 🔍 디버깅 로그 7: 리프레시 성공
+        console.log('✅ [Refresh Success] Got new tokens');
+
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        // sessionStorage에 새 토큰 저장
         sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
         sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
-        // 원래 요청에 새 토큰 적용 후 재시도
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+        // 🔍 디버깅 로그 8: 원래 요청 재시도
+        console.log('🔄 [Retry Request] Retrying original request');
+
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error('[Auth] 토큰 리프레시 실패:', refreshError);
-        if (axios.isAxiosError(refreshError) && refreshError.response) {
-          console.error('[Auth] 리프레시 API 응답:', {
-            status: refreshError.response.status,
-            data: refreshError.response.data,
-          });
-        }
-        // 리프레시 실패 시 로그아웃 및 로그인 페이지로 이동
+        // 🔍 디버깅 로그 9: 리프레시 실패
+        console.error('❌ [Refresh Failed]', {
+          error: refreshError,
+          isAxiosError: axios.isAxiosError(refreshError),
+          status: axios.isAxiosError(refreshError) ? refreshError.response?.status : 'N/A',
+          data: axios.isAxiosError(refreshError) ? refreshError.response?.data : 'N/A',
+        });
+
         sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
 
-        // 세션 만료 오버레이 표시
         useAuthStore.getState().setSessionExpired(true);
+        console.log('✅ [Overlay] SessionExpired overlay shown');
 
-        // 2초 후 로그인 페이지로 이동
+        // 🔍 디버깅 로그 10: 리프레시 실패 후 리다이렉트
+        console.log('⏰ [Redirect Scheduled] Will redirect to /signin in 2 seconds (after refresh failure)');
+
         setTimeout(() => {
-          window.location.href = '/signin';
+          console.log('🚀 [Redirecting NOW]', {
+            from: window.location.href,
+            to: '/signin',
+            method: 'window.location.replace',
+          });
+
+          try {
+            window.location.replace('/signin');
+            console.log('✅ [Redirect Called] window.location.replace executed');
+          } catch (redirectError) {
+            console.error('❌ [Redirect Error]', redirectError);
+          }
         }, 2000);
+
         return Promise.reject(refreshError);
       }
     }
