@@ -98,7 +98,7 @@ export const useDraftManager = ({
 
     // 1. 중복 체크
     if (isDuplicateDraft(savedDrafts, newDraft)) {
-      alert('이미 동일한 내용의 임시저장이 있습니다.');
+      toast.error('이미 동일한 내용의 임시저장이 있습니다.');
       return false;
     }
 
@@ -119,7 +119,7 @@ export const useDraftManager = ({
   const handleManualSave = () => {
     const saved = saveDraft();
     if (saved) {
-      alert('임시 저장되었습니다!');
+      toast.success('임시 저장되었습니다!');
     }
   };
 
