@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import type { UseFormSetValue } from 'react-hook-form';
-import type { PostCategory } from '../types/post';
+import type { PostCategory, PostFormData } from '../types/post';
 import type { PostDraft } from '../utils/draftUtils';
 import {
   cleanExpiredDrafts,
@@ -16,7 +16,7 @@ interface UseDraftManagerProps {
   category: PostCategory;
   maxTitleLength: number;
   maxContentLength: number;
-  setValue: UseFormSetValue<any>;
+  setValue: UseFormSetValue<PostFormData>;
 }
 
 export const useDraftManager = ({
