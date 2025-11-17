@@ -277,6 +277,112 @@ npm run build
 npm run preview
 ```
 
+## 테스트
+
+### 테스트 실행
+
+```bash
+# 전체 테스트 실행
+npm test
+
+# Watch 모드 (개발 중 실시간 테스트)
+npm test -- --watch
+
+# UI 모드 (브라우저에서 테스트 결과 확인)
+npm test -- --ui
+
+# 커버리지 리포트
+npm test -- --coverage
+```
+
+### 테스트 커버리지
+
+**총 612개 테스트 (29개 파일)**
+
+| 카테고리 | 테스트 수 | 파일 수 |
+|---------|----------|---------|
+| **유틸리티 함수** | 61개 | 5개 |
+| **커스텀 훅** | 84개 | 4개 |
+| **UI 컴포넌트** | 467개 | 20개 |
+
+#### 상세 커버리지
+
+**유틸리티 (61개)**
+- `validation.test.ts` (15) - 이메일, 비밀번호, 이름 검증
+- `errorHandlers.test.ts` (16) - API 에러 처리
+- `imageUtils.test.ts` (10) - 이미지 리사이징, 포맷 변환
+- `draftUtils.test.ts` (16) - 임시저장 관리
+- `dateFormat.test.ts` (4) - 날짜 포맷팅
+
+**커스텀 훅 (84개)**
+- `useFormNavigation.test.ts` (23) - 폼 네비게이션 차단
+- `useDraftManager.test.ts` (26) - 임시저장 로직
+- `useImageUpload.test.ts` (17) - 이미지 업로드 처리
+- `usePostFormData.test.ts` (18) - 게시글 폼 데이터 관리
+
+**컴포넌트 (467개)**
+
+*Auth 컴포넌트 (97개)*
+- FormInput (21), ErrorMessage (10), PasswordRequirements (14)
+- SuccessOverlay (15), SessionExpiredOverlay (17), BrandingSection (31)
+
+*Common 컴포넌트 (146개)*
+- Button (24), Spinner (14), Header (30), ConfirmModal (25)
+- ScrollToTop (11), Pagination (25), PrivateRoute (14), PublicRoute (20)
+
+*Board/Post 컴포넌트 (224개)*
+- PostCard (21), ImageUploadSection (35), PostFormFields (39)
+- BoardControls (38), DraftsList (33), ExitConfirmModal (32)
+
+### 테스트 전략
+
+#### 1. 관심사의 분리 (Separation of Concerns)
+- **비즈니스 로직**: 커스텀 훅으로 분리하여 독립적으로 테스트
+- **UI 컴포넌트**: props와 렌더링 로직만 테스트
+- **유틸리티**: 순수 함수로 작성하여 테스트 용이성 확보
+
+#### 2. 테스트 도구
+- **Vitest** - 빠른 테스트 실행 (Vite 네이티브 지원)
+- **React Testing Library** - 사용자 중심 테스트
+- **happy-dom** - 경량 DOM 구현체
+
+#### 3. 테스트 범위
+- ✅ 모든 유틸리티 함수 (순수 함수)
+- ✅ 모든 커스텀 훅 (비즈니스 로직)
+- ✅ 모든 재사용 컴포넌트 (UI 로직)
+- ✅ 라우트 가드 (보안 로직)
+- ⚠️ 페이지 컴포넌트 (컴포지션만 담당, E2E 테스트로 대체 가능)
+
+#### 4. 테스트 커버리지 상세
+
+**핵심 기능별 테스트**
+- **인증 흐름**: 회원가입/로그인 폼 검증, JWT 토큰 처리
+- **게시글 CRUD**: 작성/수정/삭제 로직, 유효성 검사
+- **임시저장**: localStorage 관리, 중복 방지, 자동 삭제
+- **이미지 업로드**: 파일 검증, 리사이징, 드래그 앤 드롭
+- **페이지네이션**: URL 쿼리 파라미터, 페이지 이동, 정렬
+- **반응형 UI**: 브레이크포인트별 레이아웃, 모바일 최적화
+
+### 테스트 활용
+
+#### 개발 중 (Watch 모드)
+```bash
+npm test -- --watch
+```
+- 파일 저장 시 관련 테스트 자동 실행
+- 즉각적인 피드백으로 빠른 개발 사이클
+
+#### 리팩토링 시
+```bash
+npm test
+```
+- 모든 테스트 통과 확인
+- 기존 기능이 깨지지 않았는지 검증
+
+#### CI/CD 자동화
+- Pull Request 시 자동 테스트 실행
+- 테스트 실패 시 머지 방지
+
 ## 환경 요구사항
 
 - Node.js 20.19+ 또는 22.12+
