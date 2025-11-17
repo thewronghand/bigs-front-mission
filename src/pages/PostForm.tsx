@@ -9,13 +9,7 @@ import { useDraftManager } from '../hooks/useDraftManager';
 import { useImageUpload } from '../hooks/useImageUpload';
 import { usePostFormData } from '../hooks/usePostFormData';
 import { useFormNavigation } from '../hooks/useFormNavigation';
-import type { PostCategory } from '../types/post';
-
-interface PostFormData {
-  title: string;
-  content: string;
-  category: PostCategory;
-}
+import type { PostCategory, PostFormData } from '../types/post';
 
 // 보안 상수
 const MAX_TITLE_LENGTH = 30;

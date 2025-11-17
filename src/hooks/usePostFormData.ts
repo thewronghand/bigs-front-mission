@@ -5,13 +5,7 @@ import type { UseFormSetValue } from 'react-hook-form';
 import { createPost, getCategories, getPostDetail, updatePost } from '../api';
 import { handlePostFormApiError, API_BASE_URL } from '../utils';
 import { MAX_FILE_SIZE, ALLOWED_IMAGE_EXTENSIONS, createTransparentImageAsync } from '../utils/imageUtils';
-import type { PostCategory } from '../types/post';
-
-interface PostFormData {
-  title: string;
-  content: string;
-  category: PostCategory;
-}
+import type { PostFormData } from '../types/post';
 
 interface UsePostFormDataProps {
   isEditMode: boolean;

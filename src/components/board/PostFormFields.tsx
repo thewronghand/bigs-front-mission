@@ -1,12 +1,6 @@
 import type { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { Button } from '../common';
-import type { PostCategory } from '../../types/post';
-
-interface PostFormData {
-  title: string;
-  content: string;
-  category: PostCategory;
-}
+import type { PostCategory, PostFormData } from '../../types/post';
 
 interface PostFormFieldsProps {
   register: UseFormRegister<PostFormData>;
