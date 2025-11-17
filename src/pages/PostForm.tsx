@@ -9,7 +9,7 @@ import { useDraftManager } from '../hooks/useDraftManager';
 import { useImageUpload } from '../hooks/useImageUpload';
 import { usePostFormData } from '../hooks/usePostFormData';
 import { useFormNavigation } from '../hooks/useFormNavigation';
-import type { PostCategory, PostFormData } from '../types/post';
+import type { PostFormData } from '../types/post';
 
 // 보안 상수
 const MAX_TITLE_LENGTH = 30;
@@ -94,7 +94,9 @@ export default function PostForm() {
         {postFormData.initialDataLoading && (
           <div className="flex flex-col items-center justify-center py-12 xs:py-16 sm:py-20">
             <Spinner size="lg" />
-            <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">게시글 정보를 불러오는 중...</p>
+            <p className="text-gray-500 mt-4 xs:mt-6 text-sm xs:text-base">
+              게시글 정보를 불러오는 중...
+            </p>
           </div>
         )}
 
@@ -105,13 +107,20 @@ export default function PostForm() {
               <DraftsList
                 drafts={draftManager.drafts}
                 isExpanded={draftManager.isDraftsExpanded}
-                onToggle={() => draftManager.setIsDraftsExpanded(!draftManager.isDraftsExpanded)}
+                onToggle={() =>
+                  draftManager.setIsDraftsExpanded(
+                    !draftManager.isDraftsExpanded
+                  )
+                }
                 onLoadDraft={draftManager.handleLoadDraft}
                 onDeleteDraft={draftManager.handleDeleteDraft}
               />
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 xs:space-y-6 bg-white p-4 xs:p-6 sm:p-8 rounded-lg shadow">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4 xs:space-y-6 bg-white p-4 xs:p-6 sm:p-8 rounded-lg shadow"
+            >
               {/* 폼 필드들 (카테고리, 제목, 내용) */}
               <PostFormFields
                 register={register}
@@ -161,7 +170,11 @@ export default function PostForm() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={!isFormValid || isSubmitting || (isEditMode && !formNavigation.hasUnsavedChanges)}
+                  disabled={
+                    !isFormValid ||
+                    isSubmitting ||
+                    (isEditMode && !formNavigation.hasUnsavedChanges)
+                  }
                   variant="primary"
                   size="lg"
                   fullWidth
@@ -172,8 +185,8 @@ export default function PostForm() {
                       ? '수정 중...'
                       : '작성 중...'
                     : isEditMode
-                      ? '수정하기'
-                      : '작성하기'}
+                    ? '수정하기'
+                    : '작성하기'}
                 </Button>
               </div>
             </form>
@@ -188,7 +201,9 @@ export default function PostForm() {
         onExitWithoutSaving={formNavigation.handleExitWithoutSaving}
         onCancel={formNavigation.handleCancelExit}
         canSave={formNavigation.canSaveOnExit}
-        saveDisabledReason={!isEditMode ? draftManager.getSaveDisabledReason() : undefined}
+        saveDisabledReason={
+          !isEditMode ? draftManager.getSaveDisabledReason() : undefined
+        }
         isEditMode={isEditMode}
       />
     </div>
