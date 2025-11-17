@@ -34,6 +34,12 @@ export interface PostUpdateRequest {
   category: PostCategory;
 }
 
+export interface PostFormData {
+  title: string;
+  content: string;
+  category: PostCategory;
+}
+
 export interface PageInfo {
   pageNumber: number;
   pageSize: number;

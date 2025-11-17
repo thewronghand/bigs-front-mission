@@ -17,20 +17,12 @@ export default function SignIn() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting, isValid },
   } = useForm<SignInRequest>({
     mode: 'onChange',
   });
 
   const [apiError, setApiError] = useState('');
-
-  const username = watch('username', '');
-  const password = watch('password', '');
-
-  // 모든 필드가 입력되었는지 확인
-  const allFieldsFilled = username && password;
-  const isFormValid = allFieldsFilled && isValid;
 
   const onSubmit = async (data: SignInRequest) => {
     setApiError('');
@@ -110,7 +102,7 @@ export default function SignIn() {
             {/* 제출 버튼 */}
             <Button
               type="submit"
-              disabled={!isFormValid || isSubmitting}
+              disabled={!isValid || isSubmitting}
               variant="primary"
               size="lg"
               className="w-full font-medium"

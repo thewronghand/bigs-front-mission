@@ -159,6 +159,18 @@ export default function PostDetail() {
                   {postDetailData.content}
                 </p>
               </div>
+
+              {/* xs 전용 목록으로 버튼 */}
+              <div className="mt-6 xs:hidden">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => navigate('/boards')}
+                  className="w-full text-sm"
+                >
+                  목록으로
+                </Button>
+              </div>
             </div>
           ) : null}
         </div>

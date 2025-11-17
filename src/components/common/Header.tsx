@@ -44,7 +44,7 @@ export default function Header({
               onClick={actionButton.onClick}
               variant={actionButton.variant || 'primary'}
               size="md"
-              className="hidden sm:inline-flex text-xs xs:text-sm px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2"
+              className="hidden xs:inline-flex text-xs xs:text-sm px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2"
             >
               {actionButton.label}
             </Button>

@@ -5,3 +5,4 @@ export { default as Spinner } from './Spinner';
 export { default as Header } from './Header';
 export { default as ScrollToTop } from './ScrollToTop';
 export { default as ConfirmModal } from './ConfirmModal';
+export { default as ErrorBoundary } from './ErrorBoundary';

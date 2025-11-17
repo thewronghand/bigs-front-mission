@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import type { UseFormSetValue } from 'react-hook-form';
-import type { PostCategory } from '../types/post';
+import type { PostCategory, PostFormData } from '../types/post';
 import type { PostDraft } from '../utils/draftUtils';
 import {
   cleanExpiredDrafts,
@@ -16,7 +16,7 @@ interface UseDraftManagerProps {
   category: PostCategory;
   maxTitleLength: number;
   maxContentLength: number;
-  setValue: UseFormSetValue<any>;
+  setValue: UseFormSetValue<PostFormData>;
 }
 
 export const useDraftManager = ({
@@ -98,7 +98,7 @@ export const useDraftManager = ({
 
     // 1. 중복 체크
     if (isDuplicateDraft(savedDrafts, newDraft)) {
-      alert('이미 동일한 내용의 임시저장이 있습니다.');
+      toast.error('이미 동일한 내용의 임시저장이 있습니다.');
       return false;
     }
 
@@ -119,7 +119,7 @@ export const useDraftManager = ({
   const handleManualSave = () => {
     const saved = saveDraft();
     if (saved) {
-      alert('임시 저장되었습니다!');
+      toast.success('임시 저장되었습니다!');
     }
   };
 
